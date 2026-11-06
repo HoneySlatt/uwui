@@ -15,8 +15,9 @@ Apache-2.0
 ([ADR-0181](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0181-uwuis-scope.md),
 [ADR-0190](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0190-uwuis-requirements.md)).
 
-- The base of every interface of its owner's: applications, the owner's desktop shell, and the
-  editor and games of SlimeEngine, which depends on uwui, never the reverse.
+- The base of its owner's applications, and of the editor and games of SlimeEngine, which
+  depends on uwui, never the reverse; not of the owner's desktop, its shell, its login and lock
+  screens nor its compositor ([ADR-0199](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0199-uwuis-targets-tools-and-references-narrowed.md)).
 - Embedded in a host that calls it: its core never owns the event loop, and runs without a window
   or a GPU.
 - The same look on every platform, from themes in files; the behaviours that each platform's users
@@ -111,6 +112,7 @@ until its milestone M6d.10 decides their home.
 | How an application's state changes its interface | signals, views that say they changed as in GPUI, messages as in Elm, measured on the screens of reference | SlimeEngine's M6d.1 |
 | The format of layouts | the engine's notation laid out as scene files, a markup of its own, a subset of HTML and CSS | SlimeEngine's M6d.1 |
 | Rust's code reloaded, its state kept | to survey | SlimeEngine's M6d.1 |
+| Games' interfaces, HUD, inventories, dialogues and interfaces within the world | uwui whole; a host and layers of their own over uwui's core; a framework of their own, weighed from what *Hunna Wood*'s interface costs the game | SlimeEngine's M6d.10 |
 | How vector shapes are drawn | by measurement: tessellated on the CPU, distance fields, or stencil then cover | the first stage's drawing |
 
 ## 4. Stages
@@ -175,15 +177,15 @@ each effect, at rest and in motion.
 - What the four programs did not need: the rest of the library of components, the editor of code,
   rich text, Markdown, the terminal, PDF, the map, the web view, charts and conversations with AIs,
   each a crate of its own.
-- The system's integrations in a crate of their own; hosts for the owner's shell, its login and
-  lock screens, and its compositor; whole Android applications without Kotlin; web applications
-  installed and offline, and uwui embedded in a page.
+- The system's integrations in a crate of their own; whole Android applications without Kotlin;
+  web applications installed and offline, and uwui embedded in a page.
 - Video decoded by the GPU, HDR, AVIF, JPEG XL, HEIC and Lottie; the renderer on the CPU, measured
   on the lowest machines.
 - Extensions in WebAssembly; settings, the window's state and undo for applications; translation
   through Fluent.
-- `uwui new`, `run`, `dev`, `bundle` and `doctor`; packages for Linux, Windows, Android and the
-  web; signed updates; a book, a site whose demonstrations run in the browser, and small
+- `uwui new`, `run`, `dev`, `bundle` and `doctor`, `bundle` delegating to the tools that make
+  each package; packages for Linux, Windows, Android and the web; updates installed by an
+  application evaluated, at most an optional crate for Windows and macOS ([ADR-0199](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0199-uwuis-targets-tools-and-references-narrowed.md)); a book, a site whose demonstrations run in the browser, and small
   applications finished.
 - WCAG 2.2 at level AA, checked; the same small application, whole, written with each rival and
   with uwui, measured on the owner's machines.
