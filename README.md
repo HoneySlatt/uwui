@@ -23,6 +23,8 @@ every platform, and is read and driven by agents. It is the base of the interfac
 - [`docs/ROADMAP.md`](docs/ROADMAP.md): what uwui is, its quality bar, its open decisions and its
   stages.
 - [`docs/PLAN.md`](docs/PLAN.md): the work in progress.
+- [`docs/measurements.md`](docs/measurements.md): what the programs of uwui's pilots and their
+  rivals measured, on its screens of reference.
 - [`docs/adr/README.md`](docs/adr/README.md): where its decisions are recorded.
 
 ## Checks

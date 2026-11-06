@@ -28,6 +28,9 @@ Each fact has one home; elsewhere, link to it.
 - `README.md`: what uwui is, its real state, its checks; these change.
 - `docs/ROADMAP.md`: direction, the quality bar, open decisions, stages; one changes.
 - `docs/PLAN.md`: the current work; it moves.
+- `docs/measurements.md`: the figures of the programs and their rivals on the screens of
+  reference; one is measured.
+- `scripts/`: each script says at its head what it does and how to run it.
 - `docs/adr/README.md`: where decisions are recorded; their place changes.
 - The milestones of SlimeEngine's Stage 6d, which change both repositories: SlimeEngine's
   `docs/PLAN.md`.

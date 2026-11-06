@@ -38,6 +38,26 @@ Apache-2.0
   compiling again, the start, memory, power at rest and in motion, Android and the web, agents.
   Judged on whole programs, and on screens of reference chosen before the work and never tuned for.
 
+### Screens of reference
+
+Four screens, chosen with the owner on 2026-11-06 before any work on them, measure uwui
+([ADR-0198](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0198-screens-of-reference-and-the-rivals-measured.md)).
+They are never changed to suit a benchmark: a change is the owner's decision, in an ADR. Each has
+two figures, in [`measurements.md`](measurements.md): the owner's program, the floor that a port
+must not fall under; and its rivals, the bar to beat, the best of them criterion by criterion.
+
+| Screen | What it is | Rivals |
+|---|---|---|
+| "Hello, World!" | gpui-kit's "Basic Example", word for word, from its README at [`b2aaa3e`](https://github.com/longbridge/gpui-kit/blob/b2aaa3e5f9a387dea74981586bfca33e7e08420d/README.md#basic-example): "Hello, World!" above a primary button, "Let's Go!", that prints "Clicked!" | The same with GPUI and gpui-kit, Flutter, Compose for the desktop, Electron, Tauri, Qt Quick, Slint, Iced and egui, each as its own documentation writes it |
+| Slatty's library | The grid of covers of Slatty, the owner's launcher, on the fake profile of 10,000 games that its `slatty-measure` makes; it scrolls 16 logical pixels a frame for 1,200 frames; a game's page opens, its key art fading in | Steam and Heroic, on the owner's accounts; Nautilus and gThumb, on the same 10,000 covers |
+| Opium's songs | The table of songs of Opium, the owner's music player, in its M3E theme, on a fake library of 8,500 local songs; it scrolls from end to end; a song plays, its wave of progress moving | Spotify and Cider, on the owner's accounts; Strawberry, Elisa and GNOME Music, on the same 8,500 songs |
+| Zed's file | Zed, scrolling a file of 100,000 lines made by a script | Zed itself: uwui has no editor of code before its 1.0 |
+
+Every screen is measured on the same output: 3840 × 2160 at 240 Hz, at a scale of 1.5, its window
+alone on it. Start, memory and rest are measured in a headless compositor; frames and power, on
+the owner's display. The rivals on the owner's accounts run on libraries of other sizes, written
+beside their figures, and change with their versions: each figure names its version and its date.
+
 ### Machines
 
 - The high tier: the class of an RX 6900 XT, 8 cores, 32 GB, a display at 3840 × 2160 and 240 Hz:
@@ -135,18 +155,20 @@ of power.
   lost the focus, nothing drawn at rest.
 - Text styled by ranges, masked fields, double clicks, the pointer's shapes, smooth and sideways
   scrolling, virtual lists that scroll sideways, a table's header that stays; gamepads.
-- Four programs, outside this repository, ported before the API is declared stable, each with a
-  checkpoint where the owner uses it, their figures with their present frameworks measured first:
-  the music player on the desktop, the launcher Slatty, the music player's Android prototype
-  measured against Jetpack Compose, and a media application.
+- Four programs, outside this repository, before the API is declared stable, each with a
+  checkpoint where the owner uses it: three ported, their figures with their present frameworks
+  measured first, the music player on the desktop, the launcher Slatty and the music player's
+  Android prototype measured against Jetpack Compose; and a media application written anew on
+  uwui, its bar taken from the market when it is designed
+  ([ADR-0198](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0198-screens-of-reference-and-the-rivals-measured.md)).
 
-**Exit.** The four programs run on uwui at least as well as on their present frameworks, on each
-of the figures measured first; uwui's API is declared stable, after the trials' reports; writing
-an application beats GPUI with gpui-kit across the whole framework, every component and every
-program ported; every need that the music player marks as indispensable exists, shown by an
-example and its tests; nothing is drawn at rest, under Wayland, under Xwayland, on Android and on
-the web; the power that the GPU and the CPU draw is measured for each effect, at rest and in
-motion.
+**Exit.** The three programs ported run on uwui at least as well as on their present frameworks, on
+each of the figures measured first, and the media application runs; uwui's API is declared stable,
+after the trials' reports; writing an application beats GPUI with gpui-kit across the whole
+framework, every component and every program ported; every need that the music player marks as
+indispensable exists, shown by an example and its tests; nothing is drawn at rest, under Wayland,
+under Xwayland, on Android and on the web; the power that the GPU and the CPU draw is measured for
+each effect, at rest and in motion.
 
 ### Then, to its 1.0
 
