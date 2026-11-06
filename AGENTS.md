@@ -10,7 +10,7 @@ AI agents do most of the work. The owner decides direction and architecture.
 ## Where the work is
 
 - This repository holds no code of uwui's yet: only the tools that measure applications, in
-  `scripts/`. uwui's code lives in
+  `scripts/`, and the rivals' programs of reference, in `references/`. uwui's code lives in
   [SlimeEngine](https://github.com/HoneySlatt/SlimeEngine), in `crates/uwui` and
   `crates/uwui-render`, until SlimeEngine's milestone M6d.11 moves it here.
 - Work on uwui's code happens there, under SlimeEngine's `AGENTS.md` and its `docs/PLAN.md`.
@@ -32,6 +32,8 @@ Each fact has one home; elsewhere, link to it.
 - `docs/measurements.md`: the figures of the programs and their rivals on the screens of
   reference; one is measured.
 - `scripts/`: each script says at its head what it does and how to run it.
+- `references/hello-world/README.md`: the "Hello, World!" programs, their sources and versions;
+  one is added or frozen again.
 - `docs/adr/README.md`: where decisions are recorded; their place changes.
 - The milestones of SlimeEngine's Stage 6d, which change both repositories: SlimeEngine's
   `docs/PLAN.md`.

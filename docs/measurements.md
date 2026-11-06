@@ -141,6 +141,72 @@ What else they say:
 - In sway, Slatty's scroll misses more frames than the probe's own runs on the owner's display:
   91 frames over 16.7 ms here, 11 there at the median (above).
 
+## "Hello, World!" in ten frameworks (2026-11-06)
+
+The bar of the screen "Hello, World!", for SlimeEngine's milestone M6d.0b: each framework's program
+of [`references/hello-world/`](../references/hello-world/README.md), measured by
+[`scripts/hello-world.sh`](../scripts/hello-world.sh).
+
+- Machine: AMD Ryzen 7 5800X, 32 GB, Radeon RX 6900 XT on RADV, NVMe, Linux 7.3.
+- sway 1.12 without a screen, one output of 3840 × 2160 at 240 Hz, scale 1.5, the window alone on
+  it; drawn by sway's GL renderer on the GPU. Each program's release build; warm starts.
+- Each figure: the median of 10 runs and their range, or one run.
+- The desktop's own session shared the GPU, a video playing in a browser on another output: the
+  GPU's power varied by 3 W over the series, more than any program changed it.
+
+| Program | First frame shown | Still | Resident, its main process / PSS of all its processes / video memory (processes) | Size of what ships |
+|---|---|---|---|---|
+| GPUI with gpui-kit | 142 (139–145) ms | the same | 104.1 / 57.0 / 334.4 MB (1) | 49.0 MB |
+| GPUI alone | 140 (137–143) ms | the same | 98.6 / 51.6 / 337.1 MB (1) | 35.8 MB |
+| Flutter | 295 (292–298) ms | the same | 151.6 / 86.7 / 575.5 MB (1) | 21.8 MB |
+| Compose for the desktop | 944 (920–973) ms | 974 (950–1002) ms | 279.3 / 214.4 / 19.1 MB (1) | 148.8 MB, with its Java runtime |
+| Electron | 263 (251–273) ms | 266 (254–275) ms | 198.4 / 258.3 / 197.7 MB (7) | 287.3 MB |
+| Tauri | 208 (204–215) ms | 375 (368–395) ms | 174.4 / 224.9 / 616.9 MB (3) | 6.2 MB, and the system's WebKitGTK |
+| Qt Quick | 110 (108–116) ms | 132 (131–140) ms | 149.4 / 85.2 / 114.8 MB (1) | 0.05 MB, and the system's Qt, some 64 MiB |
+| Slint | 71 (69–77) ms | the same | 99.3 / 39.8 / 98.2 MB (1) | 19.0 MB |
+| Iced | 93 (91–97) ms | the same | 91.6 / 44.3 / 152.3 MB (1) | 21.9 MB |
+| egui | 78 (76–81) ms | the same | 102.3 / 52.8 / 349.3 MB (1) | 27.4 MB |
+
+At rest, 60 s, 10 s after the program stands still: frames / processor ticks / wake-ups, of every
+thread of every process it started.
+
+| Program | Wayland | Xwayland |
+|---|---|---|
+| GPUI with gpui-kit | 0 / 0 / 120 | 0 / 14 / 14,553 |
+| GPUI alone | 0 / 0 / 242 | 0 / 15 / 14,681 |
+| Flutter | 0 / 0 / 0 | 0 / 0 / 0 |
+| Compose for the desktop | X11 only | 0 / 1 / 1,731 |
+| Electron | 0 / 0 / 69 | 0 / 0 / 70 |
+| Tauri | 0 / 2 / 41 | 0 / 0 / 43 |
+| Qt Quick | 0 / 0 / 0 | 0 / 0 / 0 |
+| Slint | 0 / 0 / 121 | 0 / 0 / 120 |
+| Iced | 0 / 0 / 240 | 0 / 0 / 240 |
+| egui | 0 / 0 / 120 | 0 / 0 / 120 |
+
+What they say:
+
+- Slint, egui and Iced show their window within 100 ms, uwui's budget of a start; GPUI, with or
+  without gpui-kit, and Qt Quick within 150 ms; Compose takes nearly a second, its Java runtime
+  started first.
+- gpui-kit's program starts 2 ms later than GPUI's alone, holds 5 MB more and ships 13 MB more; but
+  gpui-kit 0.7 runs a snapshot of GPUI (`gpui-pre` 0.3.9, wgpu 29), and GPUI alone is Zed's of the
+  day (wgpu 30): the gap mixes gpui-kit with two versions of GPUI.
+- Tauri's and Qt Quick's first frames are not their last: Tauri shows its window some 170 ms before
+  its page, Qt Quick some 20 ms before its controls.
+- Video memory varies some thirtyfold, from Compose's 19 MB, which draws through Xwayland in a window it
+  keeps at 790 × 570, to Tauri's 617 MB.
+- No program draws at rest. Flutter and Qt Quick do not wake at all; GPUI under Xwayland wakes
+  some 240 times a second, the display's rate, and uses processor time for it.
+- The GPU's power at rest did not change with any program, within the 3 W of drift.
+
+Not measured, and why:
+
+- Compose's window stays at its default 790 × 570 logical pixels inside sway's tile: it draws
+  fewer pixels than the others, which its figures favour.
+- Electron reaches the network at its first start, for its spell checker's dictionary; the
+  measured starts run behind a closed proxy.
+- The processor's power: only root reads its sensor (RAPL).
+
 ## Opium's songs, from outside (2026-11-06)
 
 The floor of the screen "Opium's songs", completed for SlimeEngine's milestone M6d.0b: what the

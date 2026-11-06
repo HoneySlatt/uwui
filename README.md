@@ -27,6 +27,8 @@ every platform, and is read and driven by agents. It is the base of the interfac
   rivals measured, on its screens of reference.
 - [`scripts/`](scripts): the tools that measure any application from outside, without a probe in
   its code; [`scripts/measure.py`](scripts/measure.py) first.
+- [`references/hello-world/`](references/hello-world/README.md): the screen "Hello, World!" in ten
+  frameworks, frozen.
 - [`docs/adr/README.md`](docs/adr/README.md): where its decisions are recorded.
 
 ## Checks

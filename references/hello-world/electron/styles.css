@@ -1,0 +1,14 @@
+/* The screen's layout: the text above the button, both centred in the window. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+}

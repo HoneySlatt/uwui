@@ -1,0 +1,3 @@
+# Written by npm and Electron Forge if the app is built in place (build.sh builds in a copy)
+/node_modules/
+/out/

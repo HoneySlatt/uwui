@@ -1,0 +1,8 @@
+# The screen of reference "Hello, World!" (docs/ROADMAP.md), measured by scripts/measure.py after
+# its starts, as scripts/hello-world.sh runs it.
+still
+sleep 3
+memory still
+sleep 7
+measure rest 60
+shot final

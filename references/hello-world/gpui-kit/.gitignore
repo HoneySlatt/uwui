@@ -1,0 +1,2 @@
+# Cargo writes here when the build is run in place rather than through build.sh.
+/target/
