@@ -253,11 +253,14 @@ class Frames(Helper):
         processor ticks in the last second; False if `limit` seconds passed first."""
         deadline = time.monotonic() + limit
         history = []
+        previous, worked = {}, 0
         while time.monotonic() < deadline:
-            ticks = sum(value[1] for value in threads(pids()).values())
+            current = threads(pids())
+            worked += ticks_since(previous, current)
+            previous = current
             history = [(moment, count) for moment, count in history if moment > time.monotonic() - 1.05]
-            history.append((time.monotonic(), ticks))
-            quiet = history[0][0] <= time.monotonic() - 0.95 and ticks - history[0][1] <= 2
+            history.append((time.monotonic(), worked))
+            quiet = history[0][0] <= time.monotonic() - 0.95 and worked - history[0][1] <= 2
             last = self.frames[-1][0] if self.frames else 0
             if quiet and (now_ns() - last) / 1e9 >= STILL_SECONDS:
                 return True
@@ -370,6 +373,18 @@ def threads(pids):
                            for kind in ("voluntary", "nonvoluntary"))
             counts[(pid, int(tid))] = (head.split("(", 1)[1], int(fields[11]) + int(fields[12]), switches)
     return counts
+
+
+def ticks_since(before, after):
+    """The processor ticks worked between two readings of threads(): each thread's growth, a new
+    thread's whole count. A thread that ended takes its ticks with it, so the totals of the two
+    readings cannot be subtracted: a program that ends a busy thread would seem to work less than
+    nothing. A thread whose count fell is another that took its number: new."""
+    worked = 0
+    for key, (_, ticks, _) in after.items():
+        earlier = before.get(key, (None, 0, 0))[1]
+        worked += ticks - earlier if ticks >= earlier else ticks
+    return worked
 
 
 class Gpu:

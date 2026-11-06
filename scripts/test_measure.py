@@ -44,6 +44,23 @@ class FrameFigures(unittest.TestCase):
         self.assertEqual(measure.nearest_rank([7], 95), 7)
 
 
+class TicksSince(unittest.TestCase):
+    def test_a_thread_that_ends_does_not_take_work_away(self):
+        before = {(1, 1): ("main", 100, 0), (1, 2): ("worker", 500, 0)}
+        after = {(1, 1): ("main", 103, 0)}
+        self.assertEqual(measure.ticks_since(before, after), 3)
+
+    def test_a_new_thread_counts_whole(self):
+        before = {(1, 1): ("main", 100, 0)}
+        after = {(1, 1): ("main", 100, 0), (2, 2): ("helper", 7, 0)}
+        self.assertEqual(measure.ticks_since(before, after), 7)
+
+    def test_a_number_taken_again_is_a_new_thread(self):
+        before = {(1, 9): ("old", 400, 0)}
+        after = {(1, 9): ("new", 5, 0)}
+        self.assertEqual(measure.ticks_since(before, after), 5)
+
+
 class Kilobytes(unittest.TestCase):
     def test_units(self):
         text = "VmRSS:\t  2048 kB\ndrm-total-vram:\t3 MiB\ndrm-total-gtt:\t4096\n"
