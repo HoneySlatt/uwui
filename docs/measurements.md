@@ -71,9 +71,10 @@ measured.
   76.4 MB.
 - Data: [`scripts/fake-music-library.py`](../scripts/fake-music-library.py)'s library, 8,500 songs
   of 2,900 albums by 1,150 artists, 595 MB; Opium in its M3E theme, its services off, muted.
-- Command: [`scripts/opium-measure.sh`](../scripts/opium-measure.sh), which runs Opium's own
-  `scripts/measure/startup.py`, in sway 1.12 without a screen, one output of 3840 × 2160 at
-  240 Hz, scale 1.5, the window alone on it; without a network or a session bus.
+- Command: [`scripts/opium-measure.sh`](../scripts/opium-measure.sh) as it was before M6d.0b,
+  which ran Opium's own `scripts/measure/startup.py`, then its screenshot mode for the memory, in
+  sway 1.12 without a screen, one output of 3840 × 2160 at 240 Hz, scale 1.5, the window alone on
+  it; without a network or a session bus.
 
 | | Median (range) |
 |---|---|
@@ -94,3 +95,98 @@ What they say, and what is not measured:
   no shortcut to the page. On its home page, the services off, a sign of loading turns without
   end: Opium is never at rest there. SlimeEngine's M6d.0b gives input from outside, and measures
   them.
+
+## The method checked against Slatty's probe (2026-11-06)
+
+[`scripts/measure.py`](../scripts/measure.py) reads any program from outside, through its
+compositor and the kernel
+([ADR-0200](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0200-applications-measured-from-outside.md)).
+For SlimeEngine's milestone M6d.0b, it ran on Slatty's build with its probe, which logs from inside
+when each frame is drawn, both reading the same runs:
+[`scripts/slatty-check.sh`](../scripts/slatty-check.sh), then
+[`scripts/compare-with-probe.py`](../scripts/compare-with-probe.py).
+
+- Machine: AMD Ryzen 7 5800X, 32 GB, Radeon RX 6900 XT on RADV, NVMe, Linux 7.3.
+- Slatty at `4463d00`, its probe's release build, on the fake profile of 10,000 games.
+- sway 1.12 without a screen, one output of 3840 × 2160 at 240 Hz, scale 1.5, the window alone on
+  it at 2560 × 1440; 10 starts after one not counted.
+
+| | From outside | The probe | Apart |
+|---|---|---|---|
+| First frame, ms after the launch: shown / drawn | 261.5 (260.3–263.7) | 58.6 (57.8–60.5) | 202.9 (202.5–203.2) |
+| Still frame / `covers`, the first frame drawn with every cover | 712.5 (698.0–718.2) | 714.2 (688.2–736.2) | −4.1 (−22.0 to +21.7) |
+| At rest 60 s, Wayland / Xwayland: frames | 0 / 0 | 0 / 0 | 0 |
+| Scrolling 1,200 frames: frames | 1,200 | 1,200 | 0 |
+| The same: time between frames, p50 / p95 / p99 / longest | 4.11 / 30.91 / 31.70 / 32.28 ms | 4.30 / 31.64 / 32.29 / 34.90 ms | at most 0.7 ms, 2.6 ms for the longest |
+| The same: frames over 6.25 / 16.7 ms | 336 / 91 | 327 / 91 | 9 / 0 |
+
+The margin, from these runs:
+
+- A frame in motion is timed within 1 ms of the probe at the median and the high percentiles,
+  and the frames over 6.25 and 16.7 ms are counted within 3 %. Frames over 4.17 ms are not
+  compared: drawn frames jitter around 4.17 ms, while the frames shown follow sway's schedule.
+- The still frame lies within 22 ms, some five frames, of the probe's `covers`, before or after:
+  the probe logs `covers` when the last cover is made at its size, not when the image last
+  changes.
+- The first frame shown comes 203 ms after the first frame drawn, within a millisecond, every
+  run: Slatty draws it at 1440 × 900, before sway gives the window its tile, and sway shows it
+  once its transaction, which waits for windows to answer their new size, times out, after 200 ms
+  by default. With that timeout at 50 ms (`sway -D txn-timeout=50`), the first frame came at
+  112 ms instead of 261, in 3 runs. The method counts what a person sees, sway's wait included; a
+  program that answers sway at once does not pay it.
+
+What else they say:
+
+- sway's output without a screen refreshes at 243 Hz, not 240: 4.11 ms between frames.
+- In sway, Slatty's scroll misses more frames than the probe's own runs on the owner's display:
+  91 frames over 16.7 ms here, 11 there at the median (above).
+
+## Opium's songs, from outside (2026-11-06)
+
+The floor of the screen "Opium's songs", completed for SlimeEngine's milestone M6d.0b: what the
+section of M6d.0a above left, now that a person's input reaches the window
+([ADR-0200](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0200-applications-measured-from-outside.md)).
+
+- Machine, build, data and output as above: Opium at `72d99e4`, the fake library of 8,500 songs,
+  sway 1.12 without a screen at 3840 × 2160, 240 Hz, scale 1.5, the window alone on it.
+- Command: [`scripts/opium-measure.sh`](../scripts/opium-measure.sh), whose second part runs
+  [`scripts/measure.py`](../scripts/measure.py) with the steps of
+  [`scripts/opium-songs.steps`](../scripts/opium-songs.steps), in this order: the table opened by
+  a click, at rest 60 s; a song played 60 s, then paused; the table scrolled 16 logical pixels a
+  frame from the first song to the last; the table closed. One run of the steps; 10 starts.
+- The song plays through the session's PipeWire, muted; the library's songs are silence.
+
+| | Figure |
+|---|---|
+| Start, warm, to the first frame shown, from outside / to the first frame saved, Opium's own | 109.1 (106.4–122.4) / 178.6 (173.5–187.1) ms |
+| Memory, the table open: resident / proportional / video | 247.6 / 193.4 / 349.3 MB |
+| The same after a song played 60 s | 261.0 / 204.3 / 349.3 MB |
+| The same after the table is scrolled from end to end | 293.1 / 236.4 / 349.4 MB |
+| The same 10 s after the table is closed | 293.1 / 236.4 / 349.4 MB |
+| At rest 60 s, the table open: frames / processor / wake-ups a second | 0 / 0.8 % of a core / 42.9 |
+| A song playing 60 s: frames a second, the time between them | 4.0, 250.1 ms (249.4–251.5) |
+| The same: the processor, Opium's / the compositor's; wake-ups a second | 1.5 % / 0.2 %; 206.9 |
+| Scrolled from end to end, 130 s: frames a second, p50 / p95 / p99 / longest | 243.4, 4.11 / 4.13 / 4.15 / 8.17 ms |
+| The same: refreshes missed | 1 in 31,636 frames |
+| The same: the processor, Opium's / the compositor's | 28.0 % / 7.2 % of a core |
+| The same: the GPU's load, its power / sway alone | 12.1 %, 45.4 W / 36.8 W |
+
+The method's own copies cost the compositor during a scroll: in 20 s of the same scroll, sway used
+7.1 % of a core and the GPU was 14.4 % busy with them, 4.3 % and 9.0 % without them; Opium's
+processor, 28.4 % and 28.5 %, and the GPU's power, 45.5 W both, did not change.
+
+What they say:
+
+- Scrolling holds the display's rate from the first song to the last, one refresh missed in 130 s,
+  for about a quarter of a core, nearly all in Opium's main thread; its clipboard's thread
+  (`smithay-clipboard`) wakes some 1,000 times a second meanwhile, more than the main thread.
+- Memory does not come back: scrolling the table end to end adds 32 MB resident, and closing it
+  gives none of it back; a song played 60 s added 13 MB before.
+- Opium is never quite at rest: its thread `connect`, which looks for devices to play on, makes
+  39 of its 43 wake-ups a second, the network closed as here.
+- Its wave of progress moves 4 times a second while a song plays, and costs little.
+- The first frame shown comes some 70 ms before the first frame that Opium saves, which adds its
+  read-back and its encoding; neither is the table drawn: Opium opens on its home page.
+
+Not measured: a frame of the table opened from a still home page, which never stands still, its
+services off; the processor's power, which only root reads.

@@ -25,6 +25,8 @@ every platform, and is read and driven by agents. It is the base of the interfac
 - [`docs/PLAN.md`](docs/PLAN.md): the work in progress.
 - [`docs/measurements.md`](docs/measurements.md): what the programs of uwui's pilots and their
   rivals measured, on its screens of reference.
+- [`scripts/`](scripts): the tools that measure any application from outside, without a probe in
+  its code; [`scripts/measure.py`](scripts/measure.py) first.
 - [`docs/adr/README.md`](docs/adr/README.md): where its decisions are recorded.
 
 ## Checks
@@ -33,7 +35,8 @@ every platform, and is read and driven by agents. It is the base of the interfac
 nix develop -c scripts/check.sh
 ```
 
-It checks the links between the Markdown files, with lychee.
+It checks the links between the Markdown files, with lychee, the scripts' syntax, and the
+arithmetic of `scripts/measure.py` by its tests.
 
 ## Licence
 

@@ -1,0 +1,37 @@
+# The screen of reference "Opium's songs" (docs/ROADMAP.md), measured from outside by
+# scripts/measure.py, as scripts/opium-measure.sh runs it. Positions are in logical pixels of
+# Opium's window, 2560 x 1440, alone on its output, in the M3E theme. A button that shows on hover
+# takes a click only once the pointer has rested on it: hence a sleep between a move and a click.
+sleep 6                    # the home page, its services off, turns a sign of loading: never still
+pointer move 106 424       # "Songs", in the sidebar's library
+pointer click
+sleep 3
+pointer move 1200 700      # over the table, where the pointer stays
+sleep 7
+shot open
+memory open
+measure rest 60
+pointer move 382 337       # the first song's button to play, on hover
+sleep 0.5
+pointer click
+pointer move 1200 700
+sleep 3
+shot playing
+measure wave 60            # the song plays, muted; its wave of progress moves
+memory played
+pointer move 1425 1374     # the player's pause
+sleep 0.5
+pointer click
+pointer move 1200 700
+sleep 2
+measure scroll 130 every 4.1667 scroll 16   # 16 logical pixels a frame, from the first song to the last
+pointer lift               # the fingers leave the touchpad
+still
+shot scrolled
+memory scrolled
+pointer move 97 106        # "Home": the table closes
+sleep 0.5
+pointer click
+sleep 10
+shot closed
+memory closed

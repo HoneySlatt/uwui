@@ -55,8 +55,9 @@ must not fall under; and its rivals, the bar to beat, the best of them criterion
 | Zed's file | Zed, scrolling a file of 100,000 lines made by a script | Zed itself: uwui has no editor of code before its 1.0 |
 
 Every screen is measured on the same output: 3840 × 2160 at 240 Hz, at a scale of 1.5, its window
-alone on it. Start, memory and rest are measured in a headless compositor; frames and power, on
-the owner's display. The rivals on the owner's accounts run on libraries of other sizes, written
+alone on it, in a headless sway, from outside, by [`scripts/measure.py`](../scripts/measure.py)
+([ADR-0200](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0200-applications-measured-from-outside.md));
+frames in motion are checked once on the owner's display. The rivals on the owner's accounts run on libraries of other sizes, written
 beside their figures, and change with their versions: each figure names its version and its date.
 
 ### Machines

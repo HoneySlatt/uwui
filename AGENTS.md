@@ -9,7 +9,8 @@ AI agents do most of the work. The owner decides direction and architecture.
 
 ## Where the work is
 
-- This repository holds no code yet. uwui's code lives in
+- This repository holds no code of uwui's yet: only the tools that measure applications, in
+  `scripts/`. uwui's code lives in
   [SlimeEngine](https://github.com/HoneySlatt/SlimeEngine), in `crates/uwui` and
   `crates/uwui-render`, until SlimeEngine's milestone M6d.11 moves it here.
 - Work on uwui's code happens there, under SlimeEngine's `AGENTS.md` and its `docs/PLAN.md`.
