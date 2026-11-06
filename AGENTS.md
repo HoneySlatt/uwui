@@ -31,6 +31,8 @@ Each fact has one home; elsewhere, link to it.
 - `docs/PLAN.md`: the current work; it moves.
 - `docs/measurements.md`: the figures of the programs and their rivals on the screens of
   reference; one is measured.
+- `docs/survey-writing-an-application.md`: what other frameworks do on how an application is
+  written, each fact with its source, version and date; a fact found wrong.
 - `scripts/`: each script says at its head what it does and how to run it.
 - `references/hello-world/README.md`: the "Hello, World!" programs, their sources and versions;
   one is added or frozen again.

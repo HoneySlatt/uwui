@@ -25,6 +25,8 @@ every platform, and is read and driven by agents. It is the base of the interfac
 - [`docs/PLAN.md`](docs/PLAN.md): the work in progress.
 - [`docs/measurements.md`](docs/measurements.md): what the programs of uwui's pilots and their
   rivals measured, on its screens of reference.
+- [`docs/survey-writing-an-application.md`](docs/survey-writing-an-application.md): what other
+  frameworks do on how an application is written, read for the decisions still open.
 - [`scripts/`](scripts): the tools that measure any application from outside, without a probe in
   its code; [`scripts/measure.py`](scripts/measure.py) first.
 - [`references/hello-world/`](references/hello-world/README.md): the screen "Hello, World!" in ten
