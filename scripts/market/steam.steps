@@ -1,0 +1,35 @@
+# The screen of reference "Slatty's library" (docs/ROADMAP.md) in Steam, on the owner's account, its
+# collection "Main", measured by scripts/measure.py as scripts/market.sh runs it. Positions are in
+# logical pixels of the window, 2560 x 1440, alone on its output. A cover under the pointer shows
+# a card after a moment, as it does for a person.
+still
+pointer move 251 96        # the view of collections, beside "Home"
+sleep 0.6
+pointer click
+sleep 3
+pointer move 621 240       # the collection "Main"
+sleep 0.6
+pointer click
+sleep 3
+pointer move 1500 800      # over the grid, where the pointer stays
+still
+shot open
+memory open
+measure rest 60
+measure scroll 5 every 4.1667 scroll 16    # 16 logical pixels a frame, 1,200 frames
+pointer lift               # the fingers leave the touchpad
+still
+shot scrolled
+memory scrolled
+pointer move 1400 700      # a game: its page opens, its key art at its head
+sleep 0.6
+pointer click
+still
+shot page
+memory page
+pointer move 32 96         # "Home": the grid and the page close
+sleep 0.6
+pointer click
+sleep 10
+shot closed
+memory closed

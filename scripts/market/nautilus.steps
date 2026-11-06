@@ -1,0 +1,20 @@
+# The screen of reference "Slatty's library" (docs/ROADMAP.md) in Nautilus, on the folder of
+# Slatty's 10,000 covers, measured by scripts/measure.py as scripts/market.sh runs it. Positions
+# are in logical pixels of the window, 2560 x 1440, alone on its output.
+still
+pointer move 1300 800      # over the grid, where the pointer stays
+sleep 3
+shot open
+memory open
+measure rest 60
+measure scroll 5 every 4.1667 scroll 16    # 16 logical pixels a frame, 1,200 frames
+pointer lift               # the fingers leave the touchpad
+still
+shot scrolled
+memory scrolled
+pointer move 62 68         # "Home", in the sidebar: the grid closes
+sleep 0.5
+pointer click
+sleep 10
+shot closed
+memory closed

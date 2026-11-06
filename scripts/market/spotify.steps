@@ -1,0 +1,37 @@
+# The screen of reference "Opium's songs" (docs/ROADMAP.md) in Spotify, on the owner's account,
+# started by scripts/market.sh on a public playlist of 9,998 songs, measured by scripts/measure.py.
+# Positions are in logical pixels of the window, 2560 x 1440, alone on its output. A song plays,
+# muted in the player first.
+still
+pointer move 1200 900      # over the table, where the pointer stays
+sleep 7
+shot open
+memory open
+measure rest 60
+pointer move 2376 1397     # the player's button of sound: muted
+sleep 0.6
+pointer click
+pointer move 1281 1385     # the player's button to play: Like a Rolling Stone, the song loaded
+sleep 0.6
+pointer click
+pointer move 1200 900
+sleep 3
+shot playing
+measure wave 60            # the song plays, muted; its bar of progress moves
+memory played
+pointer move 1281 1385     # the same button: paused
+sleep 0.6
+pointer click
+pointer move 1200 900
+sleep 2
+measure scroll 160 every 4.1667 scroll 16   # 16 logical pixels a frame, from the first song to the last
+pointer lift               # the fingers leave the touchpad
+still
+shot scrolled
+memory scrolled
+pointer move 1037 29       # "Home": the table closes
+sleep 0.5
+pointer click
+sleep 10
+shot closed
+memory closed

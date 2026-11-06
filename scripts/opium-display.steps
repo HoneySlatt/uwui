@@ -1,0 +1,25 @@
+# Opium's table of songs scrolled on the owner's display, by scripts/measure.py --display, which
+# measures no start: the window, opened alone on an empty workspace of the output, is given its
+# full width by Umbriel, the owner's compositor, which then tells its origin. Positions are in
+# logical pixels of Opium's window, in the M3E theme, counted from that origin
+# (scripts/opium-songs.steps). Run inside a clone of Opium, its release build made and its profile
+# that of scripts/opium-measure.sh, the session's display focused on an empty workspace:
+#
+#     nix develop -c env PATH=<sway and grim>:$PATH WAYLAND_DISPLAY=wayland-0 \
+#         python3 -I <uwui>/scripts/measure.py --display --runs 0 --at 100,100 \
+#         --steps <uwui>/scripts/opium-display.steps <folder> -- \
+#         unshare --user --map-current-user --net scripts/measure/run.sh <profile>
+sleep 4                    # the window opens
+origin umbriel msg window-toggle-maximize; sleep 1; umbriel windows | grep -i opium | head -1
+sleep 2                    # the home page, its services off, turns a sign of loading: never still
+pointer move 106 424       # "Songs", in the sidebar's library
+pointer click
+sleep 3
+pointer move 1200 700      # over the table, where the pointer stays
+sleep 7
+shot open
+measure scroll 130 every 4.1667 scroll 16   # 16 logical pixels a frame, from the first song to the last
+pointer lift               # the fingers leave the touchpad
+still
+shot scrolled
+memory scrolled

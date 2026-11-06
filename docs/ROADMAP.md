@@ -50,22 +50,79 @@ must not fall under; and its rivals, the bar to beat, the best of them criterion
 | Screen | What it is | Rivals |
 |---|---|---|
 | "Hello, World!" | gpui-kit's "Basic Example", word for word, from its README at [`b2aaa3e`](https://github.com/longbridge/gpui-kit/blob/b2aaa3e5f9a387dea74981586bfca33e7e08420d/README.md#basic-example): "Hello, World!" above a primary button, "Let's Go!", that prints "Clicked!" | The same with GPUI and gpui-kit, with GPUI alone, Flutter, Compose for the desktop, Electron, Tauri, Qt Quick, Slint, Iced and egui, each as its own documentation writes it ([`references/hello-world/`](../references/hello-world/README.md)) |
-| Slatty's library | The grid of covers of Slatty, the owner's launcher, on the fake profile of 10,000 games that its `slatty-measure` makes; it scrolls 16 logical pixels a frame for 1,200 frames; a game's page opens, its key art fading in | Steam and Heroic, on the owner's accounts; Nautilus and gThumb, on the same 10,000 covers |
-| Opium's songs | The table of songs of Opium, the owner's music player, in its M3E theme, on a fake library of 8,500 local songs; it scrolls from end to end; a song plays, its wave of progress moving | Spotify and Cider, on the owner's accounts; Strawberry, Elisa and GNOME Music, on the same 8,500 songs |
-| Zed's file | Zed, scrolling a file of 100,000 lines made by a script | Zed itself: uwui has no editor of code before its 1.0 |
+| Slatty's library | The grid of covers of Slatty, the owner's launcher, on the fake profile of 10,000 games that its `slatty-measure` makes; it scrolls 16 logical pixels a frame for 1,200 frames; a game's page opens, its key art fading in | Steam, on the owner's account; Nautilus and gThumb, on the same 10,000 covers |
+| Opium's songs | The table of songs of Opium, the owner's music player, in its M3E theme, on a fake library of 8,500 local songs; it scrolls from end to end; a song plays, its wave of progress moving | Spotify and Cider, on the owner's accounts |
+| Zed's file | Zed, scrolling a file of 100,000 lines made by [`scripts/long-file.py`](../scripts/long-file.py) | Zed itself: uwui has no editor of code before its 1.0 |
 
 Every screen is measured on the same output: 3840 × 2160 at 240 Hz, at a scale of 1.5, its window
 alone on it, in a headless sway, from outside, by [`scripts/measure.py`](../scripts/measure.py)
 ([ADR-0200](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0200-applications-measured-from-outside.md));
 frames in motion are checked once on the owner's display. The rivals on the owner's accounts run on libraries of other sizes, written
 beside their figures, and change with their versions: each figure names its version and its date.
+The rivals were narrowed on 2026-11-06 to those that aim at what uwui aims at
+([ADR-0201](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0201-the-rivals-narrowed.md)).
+
+#### The bar of each screen
+
+The best rival on each criterion, measured on 2026-11-06, from
+[`measurements.md`](measurements.md); memory is the proportional size of all a program's
+processes, then its video memory. A program on uwui beats a screen's bar when it beats each line;
+the floor, the owner's program, is in `measurements.md` beside it.
+
+"Hello, World!":
+
+| Criterion | The bar | Held by |
+|---|---|---|
+| First frame shown / still | 71 / 71 ms | Slint |
+| Memory | 39.8 / 98.2 MB | Slint; Compose's 19.1 MB of video memory set aside, its window smaller than the others' |
+| At rest, under Wayland and Xwayland | 0 frames, 0 ticks, 0 wake-ups | Flutter, Qt Quick |
+| What ships, all it needs within | 19.0 MB | Slint |
+
+Slatty's library:
+
+| Criterion | The bar | Held by |
+|---|---|---|
+| First frame shown / still | 286 / 911 ms | Nautilus |
+| Memory, the grid open / scrolled / closed | 229.7 / 153.8; 404.0 / 149.9; 397.1 / 154.1 MB | gThumb |
+| Memory, a game's page open | 1,547.0 / 406.3 MB | Steam, alone to have one |
+| At rest | 0 frames, 0.0 % of a core, 1.2 wake-ups a second | Nautilus |
+| Scrolled: frames a second, p99, longest | 242.1, 4.19 ms, 8.28 ms | gThumb |
+| Scrolled: the processor | 169 % of a core at the display's rate; 50.4 % at 125 frames a second | gThumb; Steam |
+| Scrolled: the GPU's power | 43.1 W | gThumb |
+
+Opium's songs; Opium itself, the floor, is better than this bar on its start, its memory, its
+rest, a song playing and its frames:
+
+| Criterion | The bar | Held by |
+|---|---|---|
+| First frame shown / still | 448 / 4,409 ms | Spotify |
+| Memory, the table open / a song played / scrolled / closed | 945.2 / 441.9; 886.3 / 367.4; 848.4 / 402.5; 888.1 / 499.8 MB | Cider; Spotify for video memory |
+| At rest | 0 frames, 2.2 % of a core, 305 wake-ups a second | Spotify; Cider for wake-ups |
+| A song playing: frames a second, the processor, the GPU's power | 4.6, 13.1 % of a core, 37.8 W | Cider |
+| Scrolled: frames a second, p99 | 55.2, 24.9 ms | Spotify |
+| Scrolled: the processor, the GPU's power | 21.2 % of a core, 37.9 W, at 55 frames a second | Spotify |
+
+Zed's file, Zed itself:
+
+| Criterion | The bar |
+|---|---|
+| First frame shown / still | 246 / 1,284 ms |
+| Memory, the file open / scrolled / closed | 424.1 / 438.3 / 438.6 MB, 337.1 MB of video memory |
+| At rest | 0 frames, 0.1 % of a core, 81.8 wake-ups a second |
+| Scrolled: frames a second, p99, refreshes missed | 195.2, 8.27 ms, one frame in four |
+| Scrolled: the processor, the GPU's power | 92.3 % of a core, 47.5 W |
 
 ### Machines
 
 - The high tier: the class of an RX 6900 XT, 8 cores, 32 GB, a display at 3840 × 2160 and 240 Hz:
   4.17 ms a frame. Frames follow the display, 60 to 240 a second and beyond.
 - The desktop's lowest: a Raspberry Pi 5, or an old computer without a Vulkan GPU, drawn by a light
-  renderer on the CPU, its effects reduced. The owner's very modest laptop is measured first.
+  renderer on the CPU, its effects reduced. The owner's very modest laptop is measured first: an
+  HP Laptop 17-ca2xxx, an AMD Athlon Silver 3050U (Zen, 2 cores at 1.4 to 3.2 GHz, 1 MiB of L2
+  and 4 MiB of L3 cache) and its integrated Radeon (Vega) on amdgpu, 4 GiB of DDR4 on one module,
+  a single channel at 2,400 MT/s, its second slot empty, 3.25 GiB of it left to programs; Ethernet,
+  Wi-Fi and an ELAN touchpad; NixOS 26.11, Linux 7.1.5, the compositor niri. Its display's size and
+  rate, its storage and its Vulkan driver are not yet known.
 - Phones: an entry-level Android 14 phone, of the class of a Helio G99, 4 GB, a screen at 90 Hz,
   not measured; the owner's Pixel measures phones.
 - The web: both of them in a browser, Chrome and Firefox on the laptop, Chrome on the phone, the

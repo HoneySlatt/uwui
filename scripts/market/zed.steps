@@ -1,0 +1,20 @@
+# The screen of reference "Zed's file" (docs/ROADMAP.md), measured by scripts/measure.py as
+# scripts/market.sh runs it. Positions are in logical pixels of Zed's window, 2560 x 1440, alone on
+# its output. Zed stands still at rest: its caret does not blink there.
+sleep 3
+pointer move 1200 700      # over the text, where the pointer stays
+sleep 7
+shot open
+memory open
+measure rest 60
+measure scroll 210 every 4.1667 scroll 16   # 16 logical pixels a frame, from the first line on
+pointer lift               # the fingers leave the touchpad
+sleep 5
+shot scrolled
+memory scrolled
+pointer move 135 49        # the tab's button to close, shown on hover
+sleep 0.6
+pointer click
+sleep 10
+shot closed
+memory closed

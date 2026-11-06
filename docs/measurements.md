@@ -256,3 +256,162 @@ What they say:
 
 Not measured: a frame of the table opened from a still home page, which never stands still, its
 services off; the processor's power, which only root reads.
+
+## The applications of the market (2026-11-06)
+
+The rivals of three screens, for SlimeEngine's milestone M6d.0c, each measured from outside by
+[`scripts/market.sh`](../scripts/market.sh), which runs [`scripts/measure.py`](../scripts/measure.py)
+with the steps of [`scripts/market/`](../scripts/market). The bar that they set, the best of them
+criterion by criterion, is in [`ROADMAP.md`](ROADMAP.md#the-bar-of-each-screen). Strawberry,
+Elisa, GNOME Music and Heroic were set aside by the owner on the same day
+([ADR-0201](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0201-the-rivals-narrowed.md)).
+
+- Machine: AMD Ryzen 7 5800X, 32 GB, Radeon RX 6900 XT on RADV, NVMe, Linux 7.3.
+- sway 1.12 without a screen, one output of 3840 × 2160 at 240 Hz, scale 1.5, each window alone on
+  it at 2560 × 1440 logical pixels.
+- Versions: one revision of nixpkgs for all, `31ecbac` of 2026-10-27, the owner's system's, pinned
+  in [`flake.lock`](../flake.lock) as the input `market`. Steam's client updates itself: its
+  package `1792618285`, of 2026-10-21.
+- Each start: 10 warm runs after one not counted, the median and the range; "still" as
+  [ADR-0200](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0200-applications-measured-from-outside.md)
+  defines it, or "never" when the program did not stand still within 60 s, 5 s for Zed. The steps:
+  one run.
+- Memory: the proportional size (PSS) summed over all the program's processes, and its video
+  memory, in MB.
+- "In motion": the frames of a scroll from its first frame to its last, so that a list that
+  reaches its end early is not charged for the seconds after.
+- Each application has a session bus of its own; the open ones run without a network, the closed
+  ones with theirs. Spotify, Cider and Steam ran on copies of the owner's profiles, logged in to
+  the owner's accounts: their figures are not reproducible from this repository.
+
+### Slatty's library
+
+Steam on the owner's collection "Main", 281 games, opened from the view of collections; Nautilus
+50.2.2 and gThumb 4.0 on the folder of Slatty's 10,000 covers, their thumbnails made beforehand by
+[`scripts/thumbnails.py`](../scripts/thumbnails.py) with the thumbnailer they call, as after a
+first visit. Each grid scrolled 16 logical pixels a frame for 1,200 frames, then closed; Steam
+also opened a game's page.
+
+| | Steam | Nautilus | gThumb |
+|---|---|---|---|
+| Start: first frame shown, ms | 7,624 (7,426–7,918) | 286 (273–311) | 316 (301–332) |
+| Start: still, ms | 15,098 (11,190–15,572), 5 runs of 10; never in the others | 911 (842–1,001) | 1,313 (1,271–1,341) |
+| Memory, the grid open | 1,493.2 / 354.0 | 460.3 / 333.5 | 229.7 / 153.8 |
+| Memory, the grid scrolled | 1,521.9 / 305.9 | 736.1 / 1,089.3 | 404.0 / 149.9 |
+| Memory, a game's page opened | 1,547.0 / 406.3 | – | – |
+| Memory, the grid closed | 1,517.7 / 296.8 | 735.5 / 1,075.7 | 397.1 / 154.1 |
+| At rest 60 s: frames / processor / wake-ups a second | 7,471 / 18.6 % / 3,136 | 0 / 0.0 % / 1.2 | 0 / 0.0 % / 12.1 |
+| In motion: frames a second | 125.1 | 15.0 | 242.1 |
+| In motion: p50 / p95 / p99 / longest, ms | 4.10 / 4.14 / 8.18 / 1,019 | 58.7 / 116.8 / 127.9 / 127.9 | 4.11 / 4.14 / 4.19 / 8.28 |
+| In motion: refreshes missed / pauses of 100 ms or more | 10 / 4 | 850 / 10 | 6 / 0 |
+| Scrolled: processor, the program's / the compositor's | 50.4 % / 4.0 % | 673 % / 2.0 % | 169 % / 7.8 % |
+| Scrolled: the GPU's load, its power | 6.2 %, 43.6 W | 23.6 %, 47.8 W | 17.9 %, 43.1 W |
+
+What they say:
+
+- gThumb holds the display's rate, 6 refreshes missed in 1,209 frames, for 1.7 cores; Nautilus
+  reads its thumbnails as the grid moves, on nearly seven cores, and shows 15 frames a second.
+- Steam's first frame comes after 7.6 s, its launcher, its update check, its client and its web
+  view started in turn. Its grid draws some 125 frames a second at rest, the pointer resting on a
+  cover, whose card shows; why it draws is not established. It scrolls at that rate, with pauses
+  of up to 1 s.
+- No grid gives memory back when it closes. Nautilus's video memory triples while it scrolls,
+  334 to 1,089 MB, and stays.
+
+### Opium's songs
+
+Spotify 1.2.95.453 on the owner's account, started on the public playlist "Top 10,000 Songs of
+All Time", 9,998 songs: the owner's own playlists hold 13 songs at most. Cider 4.0.17 on the
+owner's Apple Music library, 8,500 songs as Cider counts them while it synchronizes, its view
+"Songs". Each table rested, then a song played
+60 s, muted in the player, through the session's sound server; then each table scrolled 16
+logical pixels at each of the display's frames, from its first song to its last, and closed.
+
+| | Spotify | Cider |
+|---|---|---|
+| Start: first frame shown, ms | 448 (397–488) | 1,424 (1,407–1,442) |
+| Start: still, ms | 4,409 (4,134–4,420) | 6,037 (5,190–6,732) |
+| Memory, the table open | 1,076.9 / 441.9 | 945.2 / 636.7 |
+| Memory, a song played 60 s | 1,046.9 / 367.4 | 886.3 / 576.1 |
+| Memory, the table scrolled | 1,110.6 / 402.5 | 848.4 / 521.0 |
+| Memory, the table closed, the home page open | 1,376.6 / 499.8 | 888.1 / 845.0 |
+| At rest 60 s: frames / processor / wake-ups a second | 0 / 2.2 % / 315 | 38 / 3.6 % / 305 |
+| A song playing 60 s: frames a second, their interval at the median | 38.4, 19.3 ms | 4.6, 250 ms |
+| The same: processor / wake-ups a second / the GPU's power | 17.4 % / 2,650 / 38.7 W | 13.1 % / 1,056 / 37.8 W |
+| Scrolled: seconds in motion | 13.4 | 88.4 |
+| In motion: frames a second | 55.2 | 4.9 |
+| In motion: p50 / p95 / p99 / longest, ms | 16.7 / 23.1 / 24.9 / 476 | 17.1 / 52.6 / 144 / 58,058 |
+| In motion: refreshes missed / pauses of 100 ms or more | 2,294 / 2 | 1,423 / 15 |
+| Scrolled: processor, the program's / the compositor's | 21.2 % / 0.9 % | 30.4 % / 0.9 % |
+| Scrolled: the GPU's load, its power | 1.2 %, 37.9 W | 2.0 %, 38.0 W |
+
+What they say:
+
+- Both draw their tables at 60 frames a second at most on a display of 240 Hz, as Chromium does
+  here; Opium holds 240 (above, and on the owner's display below).
+- The same touchpad's scroll moves Chromium's tables much further than the pixels given: Spotify
+  crossed its 9,998 songs in 13.4 s. Cider's table stops for long: 58 s without a frame in this
+  run, 27 s six seconds in in an earlier one, before it moves on.
+- A song playing costs Spotify 17 % of a core and 38 frames a second, its whole window redrawn;
+  Cider 13 % and 4.6 frames a second; Opium 1.5 % and 4.0 (above).
+- Each holds about 1 GB in its processes, and gives little or none of it back when the table
+  closes; Spotify's home page takes 300 MB more.
+
+### Zed's file
+
+Zed 1.25.3 on the file of [`scripts/long-file.py`](../scripts/long-file.py): 100,000 lines of
+Rust, 3.7 MB, SHA-256 `31d1c250…82d15c8`, written by Python 3.14; its language server off, as
+nothing could fetch one. It scrolled 16 logical pixels a frame for 210 s, reaching the file's
+end, then closed it.
+
+| | Zed |
+|---|---|
+| Start: first frame shown / still, ms | 246 (238–263) / 1,284 (1,271–1,304) |
+| Memory: the file open / scrolled / closed | 424.1 / 438.3 / 438.6, video 337.1 throughout |
+| At rest 60 s: frames / processor / wake-ups a second | 0 / 0.1 % / 81.8 |
+| In motion, 209 s: frames a second | 195.2 |
+| In motion: p50 / p95 / p99 / longest, ms | 4.12 / 8.20 / 8.27 / 13.57 |
+| In motion: refreshes missed | 10,108 in 40,860 frames |
+| Scrolled: processor, Zed's / the compositor's | 92.3 % / 6.6 % |
+| Scrolled: the GPU's load, its power | 12.7 %, 47.5 W |
+
+What they say: one frame in four takes two refreshes, its main thread nearly a whole core busy;
+an earlier run of the same steps, the bus of the system's services then open to Zed, held 223.6
+frames a second, the spread between two runs. Zed's caret stops blinking, and Zed stands still.
+
+### What changed in the method
+
+- A program's stillness counted the processor's ticks of the threads alive at each reading: when
+  a busy thread ended, the total fell, and the program seemed quiet. `measure.py` counts each
+  thread's growth since its last reading
+  ([`scripts/test_measure.py`](../scripts/test_measure.py)). The starts of this section are
+  measured with it; the earlier sections' were not. Electron's and Tauri's "Hello, World!", whose
+  processes start and end threads while they start, measured again with it: 264 / 266 ms and
+  218 / 394 ms, against 263 / 266 and 208 / 375 above, the earlier figures standing.
+- A program that leaves its launcher's tree, Steam, runs under
+  [`scripts/subreaper.py`](../scripts/subreaper.py), which adopts what it leaves and ends it.
+- The session bus of `market.sh` has a configuration of its own: the system's let it start a
+  keyring, for which Chromium waited 25 s at each start.
+
+## Opium's songs, on the owner's display (2026-11-06)
+
+The frames in motion of the screen "Opium's songs", once, on the owner's display, as
+[ADR-0200](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0200-applications-measured-from-outside.md)
+asks: Opium at `72d99e4` on the fake library, alone on an empty workspace of the owner's display,
+3840 × 2160 at 240 Hz, scale 1.5, under Umbriel, the owner's compositor, given its full width,
+2560 × 1410; the steps of [`scripts/opium-display.steps`](../scripts/opium-display.steps) run by
+`scripts/measure.py --display`. One run, the owner away from the machine's input; images taken
+during the run showed the table open, then at its last song.
+
+| | Figure |
+|---|---|
+| Scrolled 130 s: frames a second | 240.0 |
+| p50 / p95 / p99 / longest, ms | 4.17 / 4.21 / 4.28 / 8.33 |
+| Refreshes missed | 2 in 31,200 frames |
+| The processor, Opium's / the compositor's | 26.0 % / 13.3 % |
+| The GPU's load, its power | 15.1 %, 47.7 W |
+
+What they say: Opium scrolls as smoothly on the owner's display as in sway
+([above](#opiums-songs-from-outside-2026-11-06)); Umbriel, which copies the frames as sway does,
+spends nearly twice sway's processor on them, 13.3 % of a core against 7.2 %. The output's other
+changes, its bar's, count among the frames: they did not raise the rate above the display's.

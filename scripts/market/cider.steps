@@ -1,0 +1,41 @@
+# The screen of reference "Opium's songs" (docs/ROADMAP.md) in Cider, on the owner's Apple Music
+# account, its library's songs, measured by scripts/measure.py as scripts/market.sh runs it.
+# Positions are in logical pixels of the window, 2560 x 1440, alone on its output. A song plays, muted in
+# the player first.
+still
+pointer move 72 288        # "Songs", in the sidebar's library
+sleep 0.5
+pointer click
+sleep 3
+pointer move 1300 800      # over the table, where the pointer stays
+still
+shot open
+memory open
+measure rest 60
+pointer move 1824 1394     # the player's button of sound: muted
+sleep 0.6
+pointer click
+pointer move 869 1394      # the player's button to play: the song loaded
+sleep 0.6
+pointer click
+pointer move 1300 800
+sleep 3
+shot playing
+measure wave 60            # the song plays, muted; its bar of progress moves
+memory played
+pointer move 869 1394      # the same button: paused
+sleep 0.6
+pointer click
+pointer move 1300 800
+sleep 2
+measure scroll 90 every 4.1667 scroll 16    # 16 logical pixels a frame, from the first song to the last
+pointer lift               # the fingers leave the touchpad
+still
+shot scrolled
+memory scrolled
+pointer move 72 77         # "Home": the table closes
+sleep 0.5
+pointer click
+sleep 10
+shot closed
+memory closed
