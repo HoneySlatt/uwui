@@ -167,9 +167,9 @@ until its milestone M6d.10 decides their home.
 
 | Topic | Candidates | Decided at |
 |---|---|---|
-| How an application's state changes its interface | signals, views that say they changed as in GPUI, messages as in Elm, measured on the screens of reference | SlimeEngine's M6d.1 |
-| The format of layouts | the engine's notation laid out as scene files, a markup of its own, a subset of HTML and CSS | SlimeEngine's M6d.1 |
-| Rust's code reloaded, its state kept | to survey | SlimeEngine's M6d.1 |
+| How an application's state changes its interface | signals, views that say they changed as in GPUI, messages as in Elm, measured on the screens of reference | SlimeEngine's M6d.1b |
+| The format of layouts | the engine's notation laid out as scene files, a markup of its own, a subset of HTML and CSS | SlimeEngine's M6d.1d |
+| Rust's code reloaded, its state kept | to survey | SlimeEngine's M6d.1c |
 | Games' interfaces, HUD, inventories, dialogues and interfaces within the world | uwui whole; a host and layers of their own over uwui's core; a framework of their own, weighed from what *Hunna Wood*'s interface costs the game | SlimeEngine's M6d.10 |
 | How vector shapes are drawn | by measurement: tessellated on the CPU, distance fields, or stencil then cover | the first stage's drawing |
 
