@@ -27,6 +27,8 @@ every platform, and is read and driven by agents. It is the base of the interfac
   rivals measured, on its screens of reference.
 - [`docs/survey-writing-an-application.md`](docs/survey-writing-an-application.md): what other
   frameworks do on how an application is written, read for the decisions still open.
+- [`docs/ideal-code/`](docs/ideal-code/README.md): each screen of reference as an author would want
+  to write it, in each of the four state models compared.
 - [`scripts/`](scripts): the tools that measure any application from outside, without a probe in
   its code; [`scripts/measure.py`](scripts/measure.py) first.
 - [`references/hello-world/`](references/hello-world/README.md): the screen "Hello, World!" in ten
@@ -39,8 +41,8 @@ every platform, and is read and driven by agents. It is the base of the interfac
 nix develop -c scripts/check.sh
 ```
 
-It checks the links between the Markdown files, with lychee, the scripts' syntax, and the
-arithmetic of `scripts/measure.py` by its tests.
+It checks the links between the Markdown files, with lychee, the scripts' syntax, the
+arithmetic of `scripts/measure.py` and what `scripts/count_code.py` counts, by their tests.
 
 ## Licence
 

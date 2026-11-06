@@ -33,6 +33,8 @@ Each fact has one home; elsewhere, link to it.
   reference; one is measured.
 - `docs/survey-writing-an-application.md`: what other frameworks do on how an application is
   written, each fact with its source, version and date; a fact found wrong.
+- `docs/ideal-code/`: each screen's code as an author would want it in each state model, its lines
+  and concepts, beside the references' examples; a file corrected before the prototypes start.
 - `scripts/`: each script says at its head what it does and how to run it.
 - `references/hello-world/README.md`: the "Hello, World!" programs, their sources and versions;
   one is added or frozen again.

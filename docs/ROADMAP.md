@@ -167,7 +167,7 @@ until its milestone M6d.10 decides their home.
 
 | Topic | Candidates | Decided at |
 |---|---|---|
-| How an application's state changes its interface | signals, views that say they changed as in GPUI, messages as in Elm, beside today's rebuild by keys as the control, compared as [ADR-0202](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0202-how-m6d1-compares-ways-of-writing-an-application.md) says; [the survey](survey-writing-an-application.md#1-how-state-changes-the-interface) | SlimeEngine's M6d.1b |
+| How an application's state changes its interface | signals, views that say they changed as in GPUI, messages as in Elm, beside today's rebuild by keys as the control, compared as [ADR-0202](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0202-how-m6d1-compares-ways-of-writing-an-application.md) says; [the survey](survey-writing-an-application.md#1-how-state-changes-the-interface); [each screen's ideal code](ideal-code/README.md) | SlimeEngine's M6d.1b3 |
 | The format of layouts | the engine's notation laid out as scene files, a markup of its own, a subset of HTML and CSS; [the survey](survey-writing-an-application.md#2-the-format-of-layouts) | SlimeEngine's M6d.1d |
 | Rust's code reloaded, its state kept | a function's body through `subsecond`, as Iced, GPUI and Rune do; a type's state through a form that does not depend on its layout, or a restart; [the survey](survey-writing-an-application.md#3-the-three-reloads) | SlimeEngine's M6d.1c |
 | Games' interfaces, HUD, inventories, dialogues and interfaces within the world | uwui whole; a host and layers of their own over uwui's core; a framework of their own, weighed from what *Hunna Wood*'s interface costs the game | SlimeEngine's M6d.10 |
