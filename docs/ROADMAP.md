@@ -50,7 +50,7 @@ must not fall under; and its rivals, the bar to beat, the best of them criterion
 | Screen | What it is | Rivals |
 |---|---|---|
 | "Hello, World!" | gpui-kit's "Basic Example", word for word, from its README at [`b2aaa3e`](https://github.com/longbridge/gpui-kit/blob/b2aaa3e5f9a387dea74981586bfca33e7e08420d/README.md#basic-example): "Hello, World!" above a primary button, "Let's Go!", that prints "Clicked!" | The same with GPUI and gpui-kit, with GPUI alone, Flutter, Compose for the desktop, Electron, Tauri, Qt Quick, Slint, Iced and egui, each as its own documentation writes it ([`references/hello-world/`](../references/hello-world/README.md)) |
-| Slatty's library | The grid of covers of Slatty, the owner's launcher, on the fake profile of 10,000 games that its `slatty-measure` makes; it scrolls 16 logical pixels a frame for 1,200 frames; a game's page opens, its key art fading in | Steam, on the owner's account; Nautilus and gThumb, on the same 10,000 covers |
+| Slatty's library | The grid of covers of Slatty, the owner's launcher, no longer developed and rebuilt on uwui as this screen alone ([ADR-0203](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0203-pilots-replaced-pluto-and-a-daw.md)), on the fake profile of 10,000 games that its `slatty-measure` makes; it scrolls 16 logical pixels a frame for 1,200 frames; a game's page opens, its key art fading in | Steam, on the owner's account; Nautilus and gThumb, on the same 10,000 covers |
 | Opium's songs | The table of songs of Opium, the owner's music player, in its M3E theme, on a fake library of 8,500 local songs; it scrolls from end to end; a song plays, its wave of progress moving | Spotify and Cider, on the owner's accounts |
 | Zed's file | Zed, scrolling a file of 100,000 lines made by [`scripts/long-file.py`](../scripts/long-file.py) | Zed itself: uwui has no editor of code before its 1.0 |
 
@@ -167,7 +167,7 @@ until its milestone M6d.10 decides their home.
 
 | Topic | Candidates | Decided at |
 |---|---|---|
-| How an application's state changes its interface | signals, views that say they changed as in GPUI, messages as in Elm, beside today's rebuild by keys as the control, compared as [ADR-0202](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0202-how-m6d1-compares-ways-of-writing-an-application.md) says; [the survey](survey-writing-an-application.md#1-how-state-changes-the-interface); [each screen's ideal code](ideal-code/README.md) | SlimeEngine's M6d.1b3 |
+| How an application's state changes its interface | signals, views that say they changed as in GPUI, messages as in Elm, beside today's rebuild by keys as the control, compared as [ADR-0202](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0202-how-m6d1-compares-ways-of-writing-an-application.md) says; [the survey](survey-writing-an-application.md#1-how-state-changes-the-interface); [each screen's ideal code](ideal-code/README.md) | SlimeEngine's M6d.1b3b, once Opium, Pluto's client and the DAW have each said what they ask of uwui ([ADR-0203](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0203-pilots-replaced-pluto-and-a-daw.md)) |
 | The format of layouts | the engine's notation laid out as scene files, a markup of its own, a subset of HTML and CSS; [the survey](survey-writing-an-application.md#2-the-format-of-layouts) | SlimeEngine's M6d.1d |
 | Rust's code reloaded, its state kept | a function's body through `subsecond`, as Iced, GPUI and Rune do; a type's state through a form that does not depend on its layout, or a restart; [the survey](survey-writing-an-application.md#3-the-three-reloads) | SlimeEngine's M6d.1c |
 | Games' interfaces, HUD, inventories, dialogues and interfaces within the world | uwui whole; a host and layers of their own over uwui's core; a framework of their own, weighed from what *Hunna Wood*'s interface costs the game | SlimeEngine's M6d.10 |
@@ -193,8 +193,8 @@ of power.
   closures on the elements, styles written in code beside the themes' files, layouts and Rust's
   code reloaded at once, the state kept.
 - A library of components in layers, as gpui-kit's: behaviour and state in uwui, the look in
-  themes, one dependency for an application; chosen from the needs of the music player and the
-  launcher, tables among them; every component held to the same bar.
+  themes, one dependency for an application; chosen from the needs of the first stage's programs,
+  tables among them; every component held to the same bar.
 - The platforms' behaviours, the same look everywhere: a scroll's physics, predictive back, a
   selection's handles and the long press, haptics, the conventions of shortcuts; one model of
   focus for the keyboard, accessibility and gamepads.
@@ -216,14 +216,18 @@ of power.
 - Text styled by ranges, masked fields, double clicks, the pointer's shapes, smooth and sideways
   scrolling, virtual lists that scroll sideways, a table's header that stays; gamepads.
 - Four programs, outside this repository, before the API is declared stable, each with a
-  checkpoint where the owner uses it: three ported, their figures with their present frameworks
-  measured first, the music player on the desktop, the launcher Slatty and the music player's
-  Android prototype measured against Jetpack Compose; and a media application written anew on
-  uwui, its bar taken from the market when it is designed
-  ([ADR-0198](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0198-screens-of-reference-and-the-rivals-measured.md)).
+  checkpoint where the owner uses it: two ported, their figures with their present frameworks
+  measured first, the music player on the desktop and its Android prototype, measured against
+  Jetpack Compose; the native client of Pluto, the owner's harness of agents, today on egui; and a
+  digital audio workstation of the class of FL Studio and Pro Tools, which hosts VST3 and CLAP
+  plugins, a new project. The last two each take their bar from their interview and the market
+  when they are designed. Beside them, Slatty's library, rebuilt alone as its screen of reference
+  ([ADR-0198](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0198-screens-of-reference-and-the-rivals-measured.md),
+  [ADR-0203](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0203-pilots-replaced-pluto-and-a-daw.md)).
 
-**Exit.** The three programs ported run on uwui at least as well as on their present frameworks, on
-each of the figures measured first, and the media application runs; uwui's API is declared stable,
+**Exit.** The two programs ported run on uwui at least as well as on their present frameworks, on
+each of the figures measured first, and so does Slatty's library against Slatty on Iced; Pluto's
+client and the DAW run, each at the bar set when it was designed; uwui's API is declared stable,
 after the trials' reports; writing an application beats GPUI with gpui-kit across the whole
 framework, every component and every program ported; every need that the music player marks as
 indispensable exists, shown by an example and its tests; nothing is drawn at rest, under Wayland,
