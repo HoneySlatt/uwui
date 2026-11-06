@@ -11,4 +11,5 @@ What is being worked on now. Direction beyond it: [`ROADMAP.md`](ROADMAP.md).
   bar
   ([ADR-0197](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0197-uwuis-repository-public-from-now.md)).
 - Next here: uwui designed as a project at SlimeEngine's M6d.10, which plans this repository's
-  first stage in this file; then its code, at M6d.11.
+  first stage in this file; then its code, at M6d.11, which keeps the logo already in `logo/`
+  rather than the copy in SlimeEngine's `crates/uwui/logo`.

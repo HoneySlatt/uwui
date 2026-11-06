@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo/uwui.svg" alt="uwui's logo: a blue drop with eyes and a smile, above the name uwui" width="192">
+</p>
+
 # uwui
 
 uwui is a UI framework in Rust, drawn by the GPU, for the desktop, Android phones and the web. It is
@@ -32,4 +36,5 @@ It checks the links between the Markdown files, with lychee.
 ## Licence
 
 uwui is under the MIT licence or the Apache licence 2.0, at your choice:
-[`LICENSE-MIT`](LICENSE-MIT), [`LICENSE-APACHE`](LICENSE-APACHE).
+[`LICENSE-MIT`](LICENSE-MIT), [`LICENSE-APACHE`](LICENSE-APACHE). Its logo is not under them: its
+author keeps its rights, and [`logo/README.md`](logo/README.md) says how it may be shown.
