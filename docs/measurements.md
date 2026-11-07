@@ -718,3 +718,1125 @@ styling. They are tested through the bench alone, not apart: none is kept.
 
 Not measured: the owner's laptop, which the owner may measure with the command above; a start,
 the memory that the system sees, power, and the GPU, which a window's host measures from M6d.7.
+
+## Three models beside the control, on M6d.1b's bench (2026-11-07)
+
+Signals, views that say they changed, and messages, prototyped on the bench of SlimeEngine's
+milestone M6d.1b3a from [their ideal code](ideal-code/README.md), and the control measured again
+beside them on the same bench
+([ADR-0202](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0202-how-m6d1-compares-ways-of-writing-an-application.md)).
+The prototypes are on the branch
+[`m6d1b-bench`](https://github.com/HoneySlatt/SlimeEngine/tree/m6d1b-bench/benches/src/prototypes),
+thrown away once M6d.1b ends. The bench measures as
+[the control's section](#how-the-bench-measures) says, with the additions below. The choice of a
+model waits for M6d.1b3b
+([ADR-0203](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0203-pilots-replaced-pluto-and-a-daw.md)).
+
+- Machine: AMD Ryzen 7 5800X, 32 GB, Linux 7.3; the bench pinned to one core, the machine at
+  rest.
+- Build: release, SlimeEngine's branch `m6d1b-bench`. The control and the signals' times at
+  `efdad6d`; the signals' counts at `fcc9acb`, which marks a selection changed alone as
+  `Ui::describe` does, without drawing its list again, and counts the same at `ae40506`; the views
+  and messages at `ae40506`, which takes out of them allocations of the prototypes' own: a `Vec`
+  for each row of a view's processor, and a closure for each handler of `view`, whose message is
+  now kept by value, as Iced keeps it. A run of the signals at `ae40506` was some 10 % slower
+  throughout, in the theme's styles too, which their code does not touch: the machine's noise, not
+  kept.
+- Command: `taskset -c 6 target/release/slime-benches --prototypes`, after
+  `cargo build --locked --release -p slime-benches`. A model and a screen may be named:
+  `control signals views messages`, `hello library songs document mistakes`.
+- Each time: the median of 21 runs. Each count: taken once, and the same on a second run, for
+  every screen of every model.
+
+### What the bench added for the three models
+
+On the branch, beside what the four share since M6d.1b2:
+
+- **Elements nested as tuples**, an array, a `Vec` or an `Option`, which the three models write
+  and the control does not.
+- **A description matched with the tree's by keys**, for views and messages: an element without a
+  key takes the key of its place among its siblings.
+- **Events found up the tree:** a handler is looked for from the element that an action names up
+  to the root; a command or a cancel that none takes there goes to any handler of it.
+- **Scripts that find their elements by class**, not by the control's paths, so that the four
+  models play the same script; the search runs outside the spans measured.
+- **The delay ended by the model's own pending work too:** a frame ends it only when no builder is
+  asked to run and the model has no work left for the next frame, a message queued, a binding
+  queued, a view notified and not rendered. In the four models, none was left: a screen's first
+  rows show one frame after it opens, and every other interaction in the frame of its input, as
+  in the control.
+- **On uwui's tree:** `Ui::describe`, which gives an element a new description outside its
+  builder; `Ui::change`, which changes one part of it, a text, an image, a class, a selection, a
+  list's rows or a wave, marking what `describe` would for that part, without the rest given
+  again; `Children::keep`, which keeps a child and its subtree as they are; `Ui::parent`;
+  `Ui::asks_build`; `Ui::forget_builds`, which makes each builder run again whatever its
+  revision; and the children that a build removes freed in the order of their places.
+- **Exact counts:** the tree's removal in a fixed order, and the bench's maps hashed with fixed
+  keys. Before, the places that new elements took, and the moment a map that takes and gives back
+  entries grew, changed from one run to the next, which the second run's check showed. The
+  control is measured again on this bench: it pays one allocation more for each build that removes
+  children.
+
+What each model's runtime is, on the branch:
+
+- **Signals**, written by hand, no library added
+  ([ADR-0204](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0204-signals-written-by-hand-for-the-prototypes.md)): one thread;
+  signals, memos and bindings in an arena, each owned by a scope; values in a `RefCell`, so that a
+  value borrowed twice panics, as Floem's; a memo tells what reads it only when its value
+  changed. A closure given where a value would be becomes a binding that changes that part of its
+  element through `Ui::change`. A list mounts the rows that come in scopes of their own and
+  disposes those that leave; `dyn_view` mounts its view again in a new scope. A new interface is
+  built from the same state by running the view's function again in a new runtime, the root
+  scope's signals taking their values in the order that they are made. Two ways in which it may
+  cost less than Floem: its bindings wait in a queue until the frame's build, so that a handler
+  that sets two signals runs a binding that reads both once; and `set` tells no one of a value
+  equal to the one held, as the ideal code has it.
+- **Views that say they changed:** each view a value in the application, rendered again when it
+  calls `notify`, its root element kept in its parent's place; a view within a view renders apart:
+  a view not notified is kept as it is when its parent renders, as GPUI's `Entity::cached` keeps
+  it, not as GPUI's plain views, which render with their parent. A list's processor runs when its
+  view rendered or the list shows other rows. A view is released, its value dropped, at the end
+  of the frame after its last handle goes. The figures are views' best case.
+- **Messages:** `update` for each message of the frame, then `view` whole, `lazy` keeping a part
+  whose value is equal, by its place in the description. A shortcut of the prototype, not of the
+  model: the description borrows the state, which the application owns beside it, so it is not
+  kept between messages. When a list shows other rows, `view` runs again, only that list's
+  closure and the `lazy` parts on its way used, and the closure runs for every row that shows.
+  Iced keeps its tree of widgets, which own their data, between messages; the ideal code's grid
+  ran its closure for the cells that come alone.
+
+"Code run" counts, in each model, the units of the application's code that the model calls:
+
+| Model | A unit |
+|---|---|
+| Control | a builder |
+| Signals | a memo worked out, a binding run again, a row's, a cell's or the root's view made |
+| Views | a `render`, a processor |
+| Messages | a `view`, a `lazy` part's closure, a row's or a cell's closure for each row or cell that shows |
+
+The units are not of one size: a builder or a `render` describes many elements, a binding changes
+one part of one. The times compare; the units count what each model runs. Each model's runtime
+keeps its own books in the application's phase, counted there: the signals' arena of nodes, the
+views' processors in `Rc`, the messages' `lazy` values in `Rc` and their places in the description
+as `Vec`s.
+
+### The four models side by side
+
+In each cell: the processor time of the whole interaction, in ms, the median of 21 runs; the
+allocations of the application's phase; and the units of code run, as the table above counts
+them. The other phases' counts, and every range, are in the full figures below.
+
+#### "Hello, World!"
+
+| Interaction | Control | Signals | Views | Messages |
+|---|---|---|---|---|
+| opened | 0.357; 18; 1 | 0.341; 19; 1 | 0.348; 22; 1 | 0.335; 21; 1 |
+| its button pressed | 0.095; 0; 0 | 0.093; 0; 0 | 0.094; 0; 0 | 0.098; 18; 1 |
+| A frame where nothing changed | 0.001; 0; 0 | 0.002; 0; 0 | 0.002; 0; 0 | 0.001; 0; 0 |
+
+Memory held, in MB: open and still; after the script and the screen closed:
+
+| Control | Signals | Views | Messages |
+|---|---|---|---|
+| 0.07; 0.06 | 0.07; 0.06 | 0.07; 0.06 | 0.07; 0.06 |
+
+#### Slatty's library
+
+| Interaction | Control | Signals | Views | Messages |
+|---|---|---|---|---|
+| opened | 2.331; 1107; 3 | 2.697; 12125; 107 | 2.393; 1231; 3 | 2.306; 1242; 107 |
+| scrolled, 16 logical pixels a frame | 174.985; 189227; 181 | 153.830; 31742; 1365 | 182.406; 211046; 181 | 171.565; 213037; 20551 |
+| the filter focused by Tab | 0.030; 0; 0 | 0.029; 0; 0 | 0.030; 0; 0 | 0.028; 0; 0 |
+| a filter typed, a character a frame | 6.334; 43645; 9 | 6.600; 46712; 352 | 6.415; 44053; 9 | 6.076; 44073; 345 |
+| the grid focused by Tab | 0.026; 0; 0 | 0.026; 0; 0 | 0.028; 0; 0 | 0.026; 0; 0 |
+| the selection moved by the arrows | 1.481; 1146; 4 | 1.541; 2044; 108 | 1.879; 3440; 6 | 1.731; 3443; 318 |
+| a game's page opened, its key art fading in | 1.011; 40; 1 | 0.969; 35; 1 | 1.188; 1126; 2 | 1.105; 1126; 106 |
+| the page closed | 0.072; 22; 1 | 0.067; 8; 1 | 0.246; 1109; 2 | 0.217; 1110; 106 |
+| the theme changed | 5.842; 1; 0 | 5.937; 4; 1 | 5.895; 1109; 2 | 5.695; 1110; 106 |
+| A frame where nothing changed | 0.014; 0; 0 | 0.014; 0; 0 | 0.015; 0; 0 | 0.014; 0; 0 |
+
+Memory held, in MB: open and still; after the script and the screen closed:
+
+| Control | Signals | Views | Messages |
+|---|---|---|---|
+| 2.59; 6.43 | 2.94; 6.43 | 2.61; 6.43 | 2.61; 6.43 |
+
+#### Opium's songs
+
+| Interaction | Control | Signals | Views | Messages |
+|---|---|---|---|---|
+| opened | 2.615; 1105; 4 | 2.693; 2683; 28 | 2.621; 1015; 4 | 2.574; 1041; 30 |
+| scrolled from end to end, 16 logical pixels a frame | 4978.913; 16922580; 16948 | 3638.214; 1186364; 8474 | 5598.537; 15159988; 16948 | 5224.382; 15532844; 483018 |
+| a column sorted by a click on its header | 2.656; 1011; 2 | 2.718; 315; 161 | 2.888; 914; 2 | 2.747; 926; 28 |
+| the table focused by Tab, from the header | 0.040; 0; 0 | 0.039; 0; 0 | 0.040; 0; 0 | 0.038; 0; 0 |
+| the selection moved by the arrows | 1.876; 1168; 4 | 2.070; 2603; 29 | 2.233; 2827; 6 | 2.111; 2863; 84 |
+| the theme changed | 8.536; 1; 0 | 8.413; 4; 1 | 8.437; 912; 2 | 8.250; 41; 1 |
+| a song played by Enter | 0.607; 1194; 38 | 0.509; 173; 64 | 0.689; 1251; 39 | 0.797; 2479; 64 |
+| each frame while a song plays, its wave moving | 2.187; 1200; 240 | 2.043; 720; 240 | 2.385; 2160; 240 | 3.274; 10320; 240 |
+| A frame where nothing changed | 0.011; 0; 0 | 0.011; 0; 0 | 0.011; 0; 0 | 0.011; 0; 0 |
+
+Memory held, in MB: open and still; after the script and the screen closed:
+
+| Control | Signals | Views | Messages |
+|---|---|---|---|
+| 2.61; 38.79 | 2.70; 38.79 | 2.61; 38.79 | 2.61; 38.79 |
+
+#### A document of 100,000 lines
+
+| Interaction | Control | Signals | Views | Messages |
+|---|---|---|---|---|
+| opened | 1.513; 320; 3 | 1.610; 1190; 73 | 1.512; 324; 3 | 1.504; 327; 74 |
+| a line that shows changed | 0.055; 237; 1 | 0.028; 7; 1 | 0.075; 247; 2 | 0.064; 248; 73 |
+| a line that does not show changed | 0.029; 236; 1 | 0.004; 1; 0 | 0.045; 246; 2 | 0.037; 247; 73 |
+| A frame where nothing changed | 0.005; 0; 0 | 0.006; 0; 0 | 0.005; 0; 0 | 0.005; 0; 0 |
+
+Memory held, in MB: open and still; after the script and the screen closed:
+
+| Control | Signals | Views | Messages |
+|---|---|---|---|
+| 11.73; 0.92 | 38.03; 0.92 | 11.73; 0.92 | 11.73; 0.92 |
+
+### Wrong renders and panics
+
+Each mistake of [the ideal code's list](ideal-code/README.md#mistakes-that-the-compiler-lets-through),
+shown by a small case that compiles; the small cases' figures are in the tables below.
+
+| Model | Mistake | What shows |
+|---|---|---|
+| The four | A key forgotten: covers keyed by their places | The focus passes to another game when one before it is removed: in each model, the second cover focused, then the first removed, the focus is on "Game 2", not "Game 1". The comparison with a new interface does not see it: it takes the focus by path, which follows the keys |
+| Control | A revision not moved | A wrong render: 2 items of 49 |
+| Control | An id kept after its builder ran again | Nothing: the id's generation moved, and it names no new element |
+| Signals | A signal read outside a closure that the view tracks | A wrong render: 1 item of 50 |
+| Signals | A signal of a scope disposed, read | A panic: a page's signal, its handle kept outside the page, read by a bar below it once the page closed and the selection moved |
+| Signals | A value borrowed twice | A panic: `update` inside a closure that `with` runs |
+| Views | A `notify` forgotten | A wrong render: 2 items of 49 |
+| Views | A view within a view changed without its own `notify` | A wrong render: 1 item of 50 |
+| Views | A view updated while it is updated, found by the prototype | A panic: a view within a view tells the view around it, which updates the view within, as GPUI's entities panic |
+| Messages | A `lazy` part whose value leaves out what it reads | A wrong render: 1 item of 49 |
+| Messages | A subscription to frames not given up | At rest, `update` and `view` run at each frame: 46 units of code a frame where nothing changes |
+| Messages | A `lazy` part kept by its place, found by the review and not shown by a case | Two `lazy` parts of equal values that change places, or a sibling that comes before one, keep the wrong content, as Iced's `lazy` by place does |
+
+Compile errors met writing the prototypes from the ideal code, an indication that depends on who
+writes: in views, five errors of the borrow checker, without codes, in two functions: Rust 2024
+captures every lifetime of an `impl Trait` that a method returns, so that `cover` and `song_row`,
+called in a processor's closure, return `impl IntoElement + use<>`. In messages, two lints: an
+element turned into itself by `.into()`, which the prototype answers with a widget type that turns
+into `El`, as Iced's do; a private type in `Message`. In signals, none in the screens' code.
+
+The concepts that the ideal code's README counts hold, but for one in views: on the library and
+the songs, `use<>`, a function's result that captures no lifetime, is a ninth concept of the
+model's. A widget that turns into `El` is the `.into()` that messages' ideal code wrote already;
+`Clone` derived is the bench's, for a new interface, not the author's.
+
+### The reloads, and a task cancelled with its component
+
+Answered on Slatty's library, its grid scrolled, a filter typed, the selection moved and a game's
+page open, without `subsecond` or `serde`: a function's body swapped through a table of entry
+points, as `subsecond` does; a type's state through a form by its fields' names, written by hand.
+The time that a reload takes is M6d.1c's.
+
+| Model | A function's body | A type's state migrated | A task cancelled with its component |
+|---|---|---|---|
+| Control | Shows once the tree forgets its builders' revisions, which the prototype adds to the tree: no revision moved, no builder runs the new body. State kept | Through a form; the revisions and ids, the program's state too, start again, and the builders are forgotten. State kept | No: the page's elements go and nothing tells the program, which keeps the task unless it drops it by hand |
+| Signals | The view's function runs again in a new runtime, its signals replayed in the order that they are made, mounted over the tree, whose elements keep their state by their keys; the view before disposed, its cleanups run, so that its tasks are cancelled and the new view starts its own. State kept | Not kept: a changed type that adds a signal before the others shifts the order, the new signal taking the selection's value, the selection the page's, which its type refuses: the selection and the page are lost. Signals would need names | Yes: in `on_cleanup`, with the page's scope |
+| Views | Every view renders again through a table of bodies by type. State kept | Each view's value through a form. State kept | Yes: the page a view of its own, which holds the task, released with its last handle |
+| Messages | `view` runs again. State kept | The state through a form. State kept | Yes for a subscription, given up once the state no longer asks for it; a task started once would need its handle kept by hand, not prototyped |
+
+### The lines that the prototypes forced to change
+
+Counted by [`scripts/count_code.py`](../scripts/count_code.py), against the ideal code at
+`1f501f2`, each file's two lines that declare its module of tests left out. In each, `main` is gone, 3
+to 9 lines, no host running it yet, and `uwui::prelude` is `super::prelude`, the same names.
+
+| Model | Screen | Ideal | Prototype | What changed, and why |
+|---|---|---|---|---|
+| Signals | `hello.rs` | 13 | 10 | `hello` made public, for the bench to call it |
+| Signals | `library.rs` | 63 | 61 | `Clone` derived on `Game`, for a new interface's signals replayed |
+| Signals | `songs.rs` | 140 | 138 | `Clone` derived on `Song` |
+| Signals | `document.rs` | 28 | 25 | Nothing |
+| Views | `hello.rs` | 16 | 14 | `Clone` derived, a view cloned for a new interface; `Hello` made public |
+| Views | `library.rs` | 101 | 100 | `Clone` on 2 types; `cover` returns `impl IntoElement + use<>` |
+| Views | `songs.rs` | 172 | 172 | `Clone` on 3 types; `song_row` returns `impl IntoElement + use<>` |
+| Views | `document.rs` | 28 | 25 | `Clone`; `lines` made public, for the bench to make the document |
+| Messages | `hello.rs` | 21 | 18 | `Message`, `update` and `view` made public |
+| Messages | `library.rs` | 98 | 94 | `Clone` on 2 types, a state cloned for a new interface |
+| Messages | `songs.rs` | 168 | 163 | `Clone` on 2 types; `Column` made public, `Message` holding it |
+| Messages | `document.rs` | 31 | 24 | `Clone`; `lines` made public |
+
+The style sheets are the control's, unchanged.
+
+### What moving the editor and *Hunna Wood* would cost
+
+The places in their code that would change, counted on SlimeEngine's `main` at `65bbb57`, the
+code under test left out. The editor is `crates/slime-editor/src`; *Hunna Wood* builds with uwui
+its overlay of development alone, `games/hunnawood/src/overlay.rs`, behind its feature
+`development`; both build panels of `crates/slime-devui`, counted once, apart.
+
+| Place | Editor | *Hunna Wood* | `slime-devui` |
+|---|---|---|---|
+| Builders, `Ui::build` | 10 | 1 | 4 |
+| Elements described in them, `add` and `add_slot` | 39 | 7 | 29 |
+| Actions read: `take_actions` | 1 | 1 | 1 |
+| Actions read: arms on `ActionKind` | 14 | 2 | 7 |
+| Ids kept to read actions, fields | 23 | 3 | 7 |
+| Revisions kept by hand: fields | 6 | 1 | 3 |
+| Revisions kept by hand: places that move them | 15 | 1 | 3 |
+| The tree's state read back: `focus`, `state` | 5 | 0 | 3 |
+
+What each place becomes in each model:
+
+| Place | Control | Signals | Views | Messages |
+|---|---|---|---|---|
+| A builder | stays | a view's function, run once; what it reads of the program's state becomes signals | a view's `render`, or a processor for a list's rows | a part of `view`, `lazy` where a revision guarded it |
+| An element described | stays | an element in a tuple; each value that changes, a closure | an element in a tuple, keyed where it was | an element in a tuple, keyed where it was |
+| An action read, an arm | stays | a handler on its element | a listener on its element | a message, its variant and its arm in `update` |
+| An id kept | stays | gone | gone | gone |
+| A revision kept, a field | stays | gone, its state in signals | gone | gone, or a `lazy` part's value |
+| A place that moves a revision | stays | gone | a `notify` | gone |
+| The tree's state read back | stays | stays | stays | stays |
+
+In the editor, 10 builders, 14 arms, 23 ids, 6 revisions and 15 places that move them would
+change in each of the three models; in *Hunna Wood*'s overlay, 1, 2, 3, 1 and 1. The models differ
+in what the code becomes, not in how many places change. Not counted: the editor's dock, built
+by uwui's `Dock::build`, its viewports, drawn by the renderer into surfaces, and one box of the
+marquee added to the display list by hand.
+
+### What they say
+
+- On the tree's phases, styles, layout and the display list, the four models do the same work:
+  the counts of elements styled, laid out and drawn again, and of items changed, are the same in
+  each, but for Opium's bar, which holds in the control one row more around its wave. The models
+  differ in the application's phase, and in what they hold.
+- Signals cost least where a list scrolls: they keep the rows that stay, and make only those that
+  come. Opium's table scrolled from end to end, 3.6 s of processor against 5.0 to 5.6 s, and
+  1.2 million allocations in the application against 15.2 to 16.9 million; Slatty's grid, 154 ms
+  against 172 to 182 ms. A line of the document that does not show costs them 4 µs and 1
+  allocation, against 29 to 45 µs and 236 to 247.
+- Signals cost most to open and to hold: the library opens with 12,100 allocations in the
+  application against 1,100 to 1,250; a document of 100,000 lines, a signal each, holds 38.0 MB
+  against 11.7 MB. A sort runs again each row's closures that read the order, 161 units of code, against 2 renders
+  or builders, and 28 closures of `view` and its rows in messages.
+- Views and messages describe a whole screen again for a change of one part: a page closed or a
+  theme changed in the library takes some 1,100 allocations in the application, against 22 and 1
+  for the control, and 8 and 4 for signals. Their scrolls cost as the control's, which builds the
+  rows again too, the views' some 5 to 12 % more.
+- Messages run `view` at each frame of the wave, the table kept by `lazy`: 3.3 ms and 10,300
+  allocations over 240 frames, against 2.0 to 2.4 ms and 720 to 2,200 for the other three.
+- A frame where nothing changed runs no code of the application and allocates nothing in it, in
+  the four models; only a subscription to frames not given up breaks that, in messages.
+- In each model, a screen's first rows show one frame after it opens, the list laid out first,
+  and every other interaction in the frame of its input: none left work of its own for the next
+  frame.
+- The memory held after a screen closed is the tree's, the same in the four.
+- Signals' reload keeps the state for a new body, but not for a changed type unless its signals
+  are named; the three others keep it for both. The control is the only one told nothing when a
+  part goes, so that a task bound to it is cancelled by hand.
+- Each model shows its own mistakes; none shows fewer than two. The control's id kept after its
+  builder ran again is no mistake on uwui's tree, the id's generation keeping it from naming
+  another element. A key forgotten passes element
+  state to another item in all four, and the bench's comparison does not see it.
+
+Not measured: the owner's laptop, which the owner may measure with the command above; a start,
+the memory that the system sees, power, and the GPU, which a window's host measures from M6d.7.
+
+### The figures, in full
+
+<details>
+<summary>The control</summary>
+
+#### "Hello, World!"
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 1 | 1, 0.357 (0.321–0.478) | 1 | 4 | 1 | 4 | 4 / 4 (100.0 %) | 0 of 4 |
+| its button pressed | 1 | 1, 0.095 (0.089–0.125) | 0 | 1 | 0 | 1 | 0 / 4 (0.0 %) | 0 of 4 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 4 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.003 (0.003–0.012) | 0.255 (0.230–0.286) | 0.091 (0.086–0.221) | 0.003 (0.002–0.003) | 0.357 (0.321–0.478) |
+| its button pressed | 0.002 (0.002–0.006) | 0.008 (0.007–0.022) | 0.084 (0.077–0.113) | 0.000 (0.000–0.000) | 0.002 (0.002–0.003) | 0.095 (0.089–0.125) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.000 (0.000–0.005) | 0.000 (0.000–0.000) | 0.001 (0.000–0.001) | 0.001 (0.001–0.007) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 18, 16.6 | 4501, 242.3 | 408, 87.1 | 34, 3.1 |
+| its button pressed | 3, 0.2 | 0, 0.0 | 1408, 68.6 | 1, 0.0 | 18, 1.8 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 6, 0.7 |
+
+Memory held, against before the screen opened: its data alone, 0.00 MB; open and still, 0.07 MB; after the script and the screen closed, 0.06 MB.
+
+#### Slatty's library
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 2.331 (2.257–3.454) | 3 | 320 | 2 | 320 | 218 / 225 (96.9 %) | 0 of 218 |
+| scrolled, 16 logical pixels a frame | 1200 | 1, 0.100 (0.096–0.166) | 181 | 4276 | 181 | 412560 | 275340 / 283453 (97.1 %) | 0 of 247 |
+| the filter focused by Tab | 1 | 1, 0.030 (0.028–0.036) | 0 | 1 | 0 | 1 | 1 / 248 (0.4 %) | 0 of 248 |
+| a filter typed, a character a frame | 5 | 1, 2.023 (1.894–2.651) | 9 | 1020 | 5 | 1028 | 692 / 720 (96.1 %) | 0 of 208 |
+| the grid focused by Tab | 1 | 1, 0.026 (0.025–0.044) | 0 | 3 | 0 | 2 | 0 / 207 (0.0 %) | 0 of 207 |
+| the selection moved by the arrows | 39 | 1, 0.881 (0.845–1.468) | 4 | 320 | 3 | 427 | 248 / 8500 (2.9 %) | 0 of 218 |
+| a game's page opened, its key art fading in | 45 | 1, 0.456 (0.425–0.747) | 1 | 5 | 1 | 48 | 49 / 10035 (0.5 %) | 0 of 223 |
+| the page closed | 1 | 1, 0.072 (0.069–0.110) | 1 | 1 | 1 | 0 | 0 / 218 (0.0 %) | 0 of 218 |
+| the theme changed | 37 | 1, 0.727 (0.703–1.184) | 0 | 320 | 0 | 11840 | 3924 / 8066 (48.6 %) | 0 of 218 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 218 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.153 (0.145–0.720) | 0.562 (0.551–0.734) | 1.495 (1.443–1.800) | 0.119 (0.113–0.200) | 2.331 (2.257–3.454) |
+| scrolled, 16 logical pixels a frame | 3.454 (3.389–3.943) | 21.916 (21.471–26.568) | 3.064 (2.982–3.584) | 35.767 (35.227–43.142) | 110.990 (108.265–130.120) | 174.985 (171.527–207.357) |
+| the filter focused by Tab | 0.005 (0.005–0.008) | 0.000 (0.000–0.000) | 0.003 (0.002–0.008) | 0.000 (0.000–0.000) | 0.021 (0.020–0.023) | 0.030 (0.028–0.036) |
+| a filter typed, a character a frame | 0.050 (0.048–0.060) | 3.032 (2.911–3.617) | 0.358 (0.284–0.391) | 2.532 (2.463–3.074) | 0.315 (0.306–0.419) | 6.334 (6.059–6.948) |
+| the grid focused by Tab | 0.006 (0.005–0.009) | 0.000 (0.000–0.000) | 0.004 (0.004–0.007) | 0.000 (0.000–0.000) | 0.016 (0.016–0.028) | 0.026 (0.025–0.044) |
+| the selection moved by the arrows | 0.003 (0.003–0.005) | 0.192 (0.178–0.295) | 0.121 (0.113–0.200) | 0.610 (0.589–1.066) | 0.548 (0.516–0.946) | 1.481 (1.417–2.511) |
+| a game's page opened, its key art fading in | 0.002 (0.002–0.003) | 0.009 (0.008–0.016) | 0.306 (0.288–0.507) | 0.144 (0.136–0.243) | 0.549 (0.519–0.979) | 1.011 (0.974–1.748) |
+| the page closed | 0.001 (0.001–0.001) | 0.006 (0.005–0.008) | 0.002 (0.002–0.004) | 0.049 (0.047–0.077) | 0.013 (0.013–0.020) | 0.072 (0.069–0.110) |
+| the theme changed | 0.002 (0.002–0.003) | 0.003 (0.003–0.008) | 2.539 (2.479–3.604) | 0.003 (0.003–0.006) | 3.288 (3.195–4.889) | 5.842 (5.682–8.511) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.001) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.013 (0.013–0.023) | 0.014 (0.014–0.024) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 1107, 2653.7 | 8756, 471.6 | 8470, 915.6 | 1723, 257.1 |
+| scrolled, 16 logical pixels a frame | 1201, 38.4 | 189227, 14438.2 | 4614, 236.4 | 161883, 43431.6 | 2106546, 291652.8 |
+| the filter focused by Tab | 14, 5.0 | 0, 0.0 | 1, 0.0 | 1, 0.0 | 53, 87.5 |
+| a filter typed, a character a frame | 207, 23.6 | 43645, 4063.8 | 1023, 19.0 | 19512, 1399.7 | 5345, 731.6 |
+| the grid focused by Tab | 18, 4.8 | 0, 0.0 | 4, 0.1 | 1, 0.0 | 48, 79.0 |
+| the selection moved by the arrows | 6, 0.8 | 1146, 261.2 | 700, 85.8 | 6084, 374.7 | 2587, 3178.4 |
+| a game's page opened, its key art fading in | 3, 0.3 | 40, 4.1 | 4554, 271.5 | 506, 56.0 | 971, 3503.6 |
+| the page closed | 5, 0.3 | 22, 1.0 | 2, 0.0 | 183, 31.8 | 18, 77.2 |
+| the theme changed | 8, 0.3 | 1, 0.0 | 44003, 8717.5 | 37, 0.3 | 61010, 8512.0 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 18, 77.2 |
+
+Memory held, against before the screen opened: its data alone, 0.65 MB; open and still, 2.59 MB; after the script and the screen closed, 6.43 MB.
+
+#### Opium's songs
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 2.615 (2.551–2.770) | 4 | 219 | 2 | 219 | 169 / 181 (93.4 %) | 0 of 169 |
+| scrolled from end to end, 16 logical pixels a frame | 27625 | 1, 0.274 (0.260–0.311) | 16948 | 67792 | 16948 | 5881272 | 4412940 / 4755405 (92.8 %) | 0 of 168 |
+| a column sorted by a click on its header | 37 | 1, 2.321 (2.245–2.734) | 2 | 1 | 1 | 193 | 171 / 6216 (2.8 %) | 0 of 168 |
+| the table focused by Tab, from the header | 3 | 1, 0.016 (0.015–0.024) | 0 | 6 | 0 | 3 | 0 / 504 (0.0 %) | 0 of 168 |
+| the selection moved by the arrows | 39 | 1, 1.529 (1.462–1.710) | 4 | 212 | 1 | 320 | 265 / 6661 (4.0 %) | 0 of 169 |
+| the theme changed | 37 | 1, 1.223 (1.185–1.301) | 0 | 219 | 0 | 8103 | 5076 / 6253 (81.2 %) | 0 of 169 |
+| a song played by Enter | 37 | 1, 0.258 (0.243–0.300) | 38 | 8 | 1 | 76 | 39 / 6253 (0.6 %) | 0 of 169 |
+| each frame while a song plays, its wave moving | 240 | 1, 0.009 (0.009–0.018) | 240 | 0 | 0 | 240 | 11 / 40671 (0.0 %) | 0 of 170 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 169 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.159 (0.142–0.194) | 0.895 (0.869–0.988) | 1.425 (1.397–1.495) | 0.133 (0.129–0.149) | 2.615 (2.551–2.770) |
+| scrolled from end to end, 16 logical pixels a frame | 46.636 (44.612–55.053) | 1446.591 (1405.060–1532.823) | 56.741 (54.330–61.468) | 958.713 (919.650–1032.312) | 2469.768 (2396.362–2622.122) | 4978.913 (4820.014–5303.777) |
+| a column sorted by a click on its header | 0.015 (0.014–0.016) | 1.169 (1.134–1.435) | 0.142 (0.135–0.160) | 0.812 (0.781–0.900) | 0.514 (0.483–0.566) | 2.656 (2.554–3.062) |
+| the table focused by Tab, from the header | 0.009 (0.008–0.011) | 0.000 (0.000–0.001) | 0.004 (0.004–0.005) | 0.000 (0.000–0.000) | 0.027 (0.025–0.038) | 0.040 (0.038–0.056) |
+| the selection moved by the arrows | 0.003 (0.003–0.004) | 0.229 (0.216–0.289) | 0.094 (0.090–0.143) | 1.050 (1.005–1.126) | 0.499 (0.483–0.601) | 1.876 (1.805–2.078) |
+| the theme changed | 0.002 (0.002–0.003) | 0.004 (0.003–0.005) | 2.434 (2.370–2.609) | 0.003 (0.003–0.004) | 6.094 (5.909–6.417) | 8.536 (8.290–9.037) |
+| a song played by Enter | 0.002 (0.002–0.003) | 0.115 (0.112–0.133) | 0.098 (0.093–0.123) | 0.069 (0.065–0.088) | 0.320 (0.300–0.397) | 0.607 (0.585–0.723) |
+| each frame while a song plays, its wave moving | 0.006 (0.006–0.007) | 0.146 (0.135–0.224) | 0.024 (0.022–0.044) | 0.012 (0.010–0.018) | 1.999 (1.852–2.577) | 2.187 (2.026–2.870) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.010 (0.009–0.017) | 0.011 (0.010–0.019) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 1105, 1381.6 | 16969, 929.0 | 9679, 976.9 | 1807, 270.1 |
+| scrolled from end to end, 16 logical pixels a frame | 27542, 881.3 | 16922580, 950694.7 | 84740, 4677.6 | 5552861, 724808.4 | 43962991, 5669253.5 |
+| a column sorted by a click on its header | 3, 0.2 | 1011, 190.1 | 1384, 91.6 | 6324, 429.6 | 3439, 2944.8 |
+| the table focused by Tab, from the header | 30, 2.7 | 0, 0.0 | 6, 0.1 | 3, 0.0 | 83, 217.5 |
+| the selection moved by the arrows | 6, 0.8 | 1168, 1387.0 | 589, 81.5 | 8050, 619.0 | 3699, 3101.5 |
+| the theme changed | 8, 0.3 | 1, 0.0 | 42405, 6578.4 | 37, 0.3 | 98488, 12293.3 |
+| a song played by Enter | 3, 0.3 | 1194, 63.8 | 1386, 89.1 | 290, 26.2 | 1011, 2710.3 |
+| each frame while a song plays, its wave moving | 0, 0.0 | 1200, 63.4 | 0, 0.0 | 240, 1.9 | 5520, 17438.6 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 19, 71.7 |
+
+Memory held, against before the screen opened: its data alone, 1.39 MB; open and still, 2.61 MB; after the script and the screen closed, 38.79 MB.
+
+#### A document of 100,000 lines
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 1.513 (1.428–1.670) | 3 | 74 | 2 | 74 | 75 / 78 (96.2 %) | 0 of 75 |
+| a line that shows changed | 1 | 1, 0.055 (0.053–0.061) | 1 | 0 | 1 | 1 | 1 / 75 (1.3 %) | 0 of 75 |
+| a line that does not show changed | 1 | 1, 0.029 (0.028–0.042) | 1 | 0 | 0 | 0 | 0 / 75 (0.0 %) | 0 of 75 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 75 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.001) | 0.060 (0.043–0.084) | 0.224 (0.202–0.266) | 1.184 (1.128–1.265) | 0.051 (0.046–0.057) | 1.513 (1.428–1.670) |
+| a line that shows changed | 0.000 (0.000–0.000) | 0.028 (0.027–0.031) | 0.000 (0.000–0.000) | 0.021 (0.021–0.024) | 0.005 (0.004–0.006) | 0.055 (0.053–0.061) |
+| a line that does not show changed | 0.000 (0.000–0.000) | 0.026 (0.025–0.035) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.003 (0.003–0.006) | 0.029 (0.028–0.042) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.004 (0.003–0.012) | 0.005 (0.004–0.014) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 320, 663.2 | 3205, 174.7 | 3127, 753.5 | 754, 107.1 |
+| a line that shows changed | 0, 0.0 | 237, 24.7 | 0, 0.0 | 119, 11.7 | 23, 37.1 |
+| a line that does not show changed | 0, 0.0 | 236, 24.6 | 0, 0.0 | 1, 0.0 | 13, 36.4 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 13, 36.4 |
+
+Memory held, against before the screen opened: its data alone, 10.75 MB; open and still, 11.73 MB; after the script and the screen closed, 0.92 MB.
+
+#### A revision not moved
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 0.646 (0.638–0.661) | 3 | 47 | 2 | 47 | 49 / 52 (94.2 %) | 0 of 49 |
+| the list focused by Tab | 1 | 1, 0.005 (0.005–0.009) | 0 | 1 | 0 | 1 | 0 / 49 (0.0 %) | 0 of 49 |
+| the selection moved by an arrow | 1 | 1, 0.003 (0.003–0.008) | 0 | 0 | 0 | 0 | 0 / 49 (0.0 %) | 2 of 49 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 49 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.028 (0.027–0.036) | 0.250 (0.244–0.259) | 0.338 (0.334–0.351) | 0.027 (0.026–0.028) | 0.646 (0.638–0.661) |
+| the list focused by Tab | 0.001 (0.001–0.003) | 0.000 (0.000–0.000) | 0.001 (0.001–0.001) | 0.000 (0.000–0.000) | 0.002 (0.002–0.004) | 0.005 (0.005–0.009) |
+| the selection moved by an arrow | 0.001 (0.001–0.002) | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.002 (0.002–0.005) | 0.003 (0.003–0.008) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.003 (0.003–0.003) | 0.004 (0.003–0.004) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 210, 334.8 | 4198, 231.2 | 1852, 295.9 | 481, 55.3 |
+| the list focused by Tab | 7, 0.5 | 0, 0.0 | 1, 0.0 | 1, 0.0 | 14, 18.4 |
+| the selection moved by an arrow | 2, 0.3 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 12, 18.4 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 12, 18.4 |
+
+Memory held, against before the screen opened: its data alone, 0.00 MB; open and still, 0.43 MB; after the script and the screen closed, 0.39 MB.
+
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+Clicked!
+
+</details>
+
+<details>
+<summary>Signals</summary>
+
+#### "Hello, World!"
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 1 | 1, 0.341 (0.335–0.364) | 1 | 4 | 1 | 4 | 4 / 4 (100.0 %) | 0 of 4 |
+| its button pressed | 1 | 1, 0.093 (0.091–0.103) | 0 | 1 | 0 | 1 | 0 / 4 (0.0 %) | 0 of 4 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 4 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.004 (0.004–0.014) | 0.246 (0.241–0.256) | 0.087 (0.086–0.096) | 0.002 (0.002–0.003) | 0.341 (0.335–0.364) |
+| its button pressed | 0.002 (0.002–0.003) | 0.008 (0.008–0.014) | 0.082 (0.080–0.091) | 0.000 (0.000–0.000) | 0.002 (0.002–0.002) | 0.093 (0.091–0.103) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.001 (0.001–0.001) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.000 (0.000–0.001) | 0.002 (0.002–0.002) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 19, 16.9 | 4501, 242.3 | 408, 87.1 | 34, 3.1 |
+| its button pressed | 3, 0.2 | 0, 0.0 | 1408, 68.6 | 1, 0.0 | 18, 1.8 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 6, 0.7 |
+
+Memory held, against before the screen opened: its data alone, 0.01 MB; open and still, 0.07 MB; after the script and the screen closed, 0.06 MB.
+
+#### Slatty's library
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 2.697 (2.585–2.929) | 107 | 320 | 2 | 320 | 218 / 225 (96.9 %) | 0 of 218 |
+| scrolled, 16 logical pixels a frame | 1200 | 1, 0.094 (0.092–0.101) | 1365 | 4276 | 181 | 412560 | 275340 / 283453 (97.1 %) | 0 of 247 |
+| the filter focused by Tab | 1 | 1, 0.029 (0.027–0.039) | 0 | 1 | 0 | 1 | 1 / 248 (0.4 %) | 0 of 248 |
+| a filter typed, a character a frame | 5 | 1, 2.178 (1.996–2.290) | 352 | 1020 | 5 | 1028 | 692 / 720 (96.1 %) | 0 of 208 |
+| the grid focused by Tab | 1 | 1, 0.026 (0.025–0.034) | 0 | 3 | 0 | 2 | 0 / 207 (0.0 %) | 0 of 207 |
+| the selection moved by the arrows | 39 | 1, 0.979 (0.942–1.009) | 108 | 320 | 3 | 427 | 248 / 8500 (2.9 %) | 0 of 218 |
+| a game's page opened, its key art fading in | 45 | 1, 0.438 (0.426–0.464) | 1 | 5 | 1 | 48 | 49 / 10035 (0.5 %) | 0 of 223 |
+| the page closed | 1 | 1, 0.067 (0.065–0.086) | 1 | 1 | 1 | 0 | 0 / 218 (0.0 %) | 0 of 218 |
+| the theme changed | 37 | 1, 0.692 (0.661–0.743) | 1 | 320 | 0 | 11840 | 3924 / 8066 (48.6 %) | 0 of 218 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 218 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.615 (0.557–0.677) | 0.545 (0.523–0.602) | 1.415 (1.376–1.532) | 0.113 (0.107–0.123) | 2.697 (2.585–2.929) |
+| scrolled, 16 logical pixels a frame | 3.259 (3.179–3.675) | 8.881 (8.760–9.231) | 2.852 (2.795–2.966) | 34.010 (33.278–35.164) | 104.834 (103.278–107.966) | 153.830 (151.290–159.002) |
+| the filter focused by Tab | 0.005 (0.005–0.012) | 0.000 (0.000–0.001) | 0.002 (0.002–0.005) | 0.000 (0.000–0.000) | 0.021 (0.020–0.028) | 0.029 (0.027–0.039) |
+| a filter typed, a character a frame | 0.048 (0.047–0.053) | 3.470 (3.300–3.620) | 0.357 (0.259–0.376) | 2.401 (2.298–2.473) | 0.306 (0.293–0.315) | 6.600 (6.200–6.826) |
+| the grid focused by Tab | 0.005 (0.005–0.008) | 0.001 (0.001–0.001) | 0.004 (0.003–0.004) | 0.000 (0.000–0.000) | 0.016 (0.015–0.020) | 0.026 (0.025–0.034) |
+| the selection moved by the arrows | 0.003 (0.003–0.004) | 0.323 (0.297–0.336) | 0.120 (0.114–0.128) | 0.580 (0.566–0.617) | 0.513 (0.488–0.583) | 1.541 (1.489–1.630) |
+| a game's page opened, its key art fading in | 0.002 (0.002–0.002) | 0.015 (0.014–0.023) | 0.298 (0.290–0.316) | 0.136 (0.132–0.145) | 0.515 (0.493–0.593) | 0.969 (0.935–1.059) |
+| the page closed | 0.001 (0.001–0.001) | 0.005 (0.005–0.012) | 0.002 (0.002–0.004) | 0.046 (0.044–0.059) | 0.013 (0.012–0.020) | 0.067 (0.065–0.086) |
+| the theme changed | 0.002 (0.002–0.002) | 0.008 (0.008–0.016) | 2.405 (2.361–2.764) | 0.003 (0.002–0.003) | 3.508 (3.376–3.637) | 5.937 (5.776–6.236) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.001 (0.001–0.001) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.013 (0.012–0.027) | 0.014 (0.013–0.029) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 12125, 4223.4 | 8756, 471.6 | 8470, 915.6 | 1723, 257.1 |
+| scrolled, 16 logical pixels a frame | 1201, 38.4 | 31742, 19717.1 | 4614, 236.4 | 161883, 43431.6 | 2106546, 291652.8 |
+| the filter focused by Tab | 14, 5.0 | 0, 0.0 | 1, 0.0 | 1, 0.0 | 53, 87.5 |
+| a filter typed, a character a frame | 207, 23.6 | 46712, 7164.9 | 1023, 19.0 | 19512, 1399.7 | 5345, 731.6 |
+| the grid focused by Tab | 18, 4.8 | 0, 0.0 | 4, 0.1 | 1, 0.0 | 48, 79.0 |
+| the selection moved by the arrows | 6, 0.8 | 2044, 1133.1 | 700, 85.8 | 6084, 374.7 | 2587, 3178.4 |
+| a game's page opened, its key art fading in | 3, 0.3 | 35, 12.9 | 4554, 271.5 | 506, 56.0 | 971, 3503.6 |
+| the page closed | 5, 0.3 | 8, 0.5 | 2, 0.0 | 183, 31.8 | 18, 77.2 |
+| the theme changed | 8, 0.3 | 4, 0.2 | 44003, 8717.5 | 37, 0.3 | 61010, 8512.0 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 18, 77.2 |
+
+Memory held, against before the screen opened: its data alone, 0.58 MB; open and still, 2.94 MB; after the script and the screen closed, 6.43 MB.
+
+#### Opium's songs
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 2.693 (2.597–2.833) | 28 | 218 | 2 | 218 | 169 / 181 (93.4 %) | 0 of 169 |
+| scrolled from end to end, 16 logical pixels a frame | 27625 | 1, 0.202 (0.191–0.232) | 8474 | 67792 | 16948 | 5881272 | 4412940 / 4755405 (92.8 %) | 0 of 168 |
+| a column sorted by a click on its header | 37 | 1, 2.398 (2.173–2.545) | 161 | 1 | 1 | 193 | 171 / 6216 (2.8 %) | 0 of 168 |
+| the table focused by Tab, from the header | 3 | 1, 0.015 (0.015–0.025) | 0 | 6 | 0 | 3 | 0 / 504 (0.0 %) | 0 of 168 |
+| the selection moved by the arrows | 39 | 1, 1.725 (1.629–1.894) | 29 | 212 | 1 | 320 | 265 / 6661 (4.0 %) | 0 of 169 |
+| the theme changed | 37 | 1, 1.269 (1.220–1.355) | 1 | 218 | 0 | 8066 | 5076 / 6253 (81.2 %) | 0 of 169 |
+| a song played by Enter | 37 | 1, 0.180 (0.169–0.220) | 64 | 8 | 1 | 75 | 39 / 6253 (0.6 %) | 0 of 169 |
+| each frame while a song plays, its wave moving | 240 | 1, 0.009 (0.008–0.016) | 240 | 0 | 0 | 240 | 11 / 40671 (0.0 %) | 0 of 170 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 169 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.294 (0.281–0.309) | 0.885 (0.850–0.971) | 1.392 (1.328–1.474) | 0.130 (0.124–0.169) | 2.693 (2.597–2.833) |
+| scrolled from end to end, 16 logical pixels a frame | 45.457 (44.520–52.216) | 219.472 (216.065–234.821) | 54.150 (52.588–58.195) | 934.684 (921.012–989.296) | 2384.638 (2361.304–2459.081) | 3638.214 (3602.678–3790.860) |
+| a column sorted by a click on its header | 0.014 (0.013–0.017) | 1.272 (1.079–1.368) | 0.138 (0.124–0.152) | 0.793 (0.769–0.860) | 0.509 (0.480–0.552) | 2.718 (2.492–2.899) |
+| the table focused by Tab, from the header | 0.009 (0.008–0.010) | 0.001 (0.000–0.001) | 0.004 (0.004–0.010) | 0.000 (0.000–0.000) | 0.026 (0.025–0.038) | 0.039 (0.037–0.054) |
+| the selection moved by the arrows | 0.003 (0.003–0.004) | 0.401 (0.376–0.570) | 0.117 (0.094–0.140) | 1.040 (1.009–1.112) | 0.500 (0.476–0.578) | 2.070 (1.972–2.326) |
+| the theme changed | 0.002 (0.002–0.003) | 0.010 (0.009–0.016) | 2.392 (2.325–2.592) | 0.003 (0.002–0.003) | 6.002 (5.903–6.270) | 8.413 (8.251–8.879) |
+| a song played by Enter | 0.002 (0.002–0.003) | 0.026 (0.024–0.044) | 0.102 (0.098–0.128) | 0.067 (0.063–0.078) | 0.312 (0.295–0.391) | 0.509 (0.489–0.643) |
+| each frame while a song plays, its wave moving | 0.006 (0.006–0.007) | 0.084 (0.075–0.131) | 0.024 (0.022–0.039) | 0.013 (0.010–0.017) | 1.918 (1.837–2.537) | 2.043 (1.955–2.730) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.001 (0.001–0.001) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.010 (0.009–0.022) | 0.011 (0.010–0.023) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 2683, 2113.6 | 16968, 929.0 | 9662, 969.0 | 1805, 270.1 |
+| scrolled from end to end, 16 logical pixels a frame | 27542, 881.3 | 1186364, 329464.2 | 84740, 4677.6 | 5552861, 724808.4 | 43962991, 5669253.5 |
+| a column sorted by a click on its header | 3, 0.2 | 315, 168.4 | 1383, 91.4 | 6323, 429.6 | 3439, 2944.8 |
+| the table focused by Tab, from the header | 30, 2.7 | 0, 0.0 | 6, 0.1 | 3, 0.0 | 83, 217.5 |
+| the selection moved by the arrows | 6, 0.8 | 2603, 2050.1 | 589, 81.5 | 8050, 619.0 | 3699, 3101.5 |
+| the theme changed | 8, 0.3 | 4, 0.2 | 42295, 6553.6 | 37, 0.3 | 98414, 12292.2 |
+| a song played by Enter | 3, 0.3 | 173, 11.1 | 1385, 88.9 | 287, 25.2 | 1009, 2710.3 |
+| each frame while a song plays, its wave moving | 0, 0.0 | 720, 48.0 | 0, 0.0 | 240, 1.9 | 5520, 17438.6 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 19, 71.7 |
+
+Memory held, against before the screen opened: its data alone, 1.34 MB; open and still, 2.70 MB; after the script and the screen closed, 38.79 MB.
+
+#### A document of 100,000 lines
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 1.610 (1.530–1.699) | 73 | 74 | 2 | 74 | 75 / 78 (96.2 %) | 0 of 75 |
+| a line that shows changed | 1 | 1, 0.028 (0.027–0.058) | 1 | 0 | 1 | 1 | 1 / 75 (1.3 %) | 0 of 75 |
+| a line that does not show changed | 1 | 1, 0.004 (0.004–0.037) | 0 | 0 | 0 | 0 | 0 / 75 (0.0 %) | 0 of 75 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 75 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.119 (0.106–0.144) | 0.242 (0.206–0.276) | 1.191 (1.147–1.248) | 0.054 (0.049–0.062) | 1.610 (1.530–1.699) |
+| a line that shows changed | 0.000 (0.000–0.000) | 0.002 (0.002–0.005) | 0.000 (0.000–0.000) | 0.020 (0.020–0.048) | 0.005 (0.005–0.007) | 0.028 (0.027–0.058) |
+| a line that does not show changed | 0.000 (0.000–0.000) | 0.001 (0.001–0.005) | 0.000 (0.000–0.001) | 0.000 (0.000–0.001) | 0.003 (0.003–0.030) | 0.004 (0.004–0.037) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.001 (0.001–0.002) | 0.000 (0.000–0.001) | 0.000 (0.000–0.001) | 0.004 (0.004–0.024) | 0.006 (0.005–0.028) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 1190, 984.7 | 3205, 174.7 | 3127, 753.5 | 754, 107.1 |
+| a line that shows changed | 0, 0.0 | 7, 0.3 | 0, 0.0 | 119, 11.7 | 23, 37.1 |
+| a line that does not show changed | 0, 0.0 | 1, 0.0 | 0, 0.0 | 1, 0.0 | 13, 36.4 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 13, 36.4 |
+
+Memory held, against before the screen opened: its data alone, 37.02 MB; open and still, 38.03 MB; after the script and the screen closed, 0.92 MB.
+
+#### A signal read outside a closure that the view tracks
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 0.738 (0.725–0.800) | 46 | 49 | 2 | 49 | 50 / 54 (92.6 %) | 0 of 50 |
+| the list focused by Tab | 1 | 1, 0.005 (0.005–0.006) | 0 | 1 | 0 | 1 | 0 / 50 (0.0 %) | 0 of 50 |
+| the selection moved by an arrow | 37 | 1, 0.008 (0.008–0.017) | 1 | 2 | 0 | 74 | 71 / 1885 (3.8 %) | 1 of 50 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 50 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.050 (0.047–0.063) | 0.294 (0.291–0.317) | 0.365 (0.357–0.392) | 0.027 (0.026–0.029) | 0.738 (0.725–0.800) |
+| the list focused by Tab | 0.001 (0.001–0.002) | 0.000 (0.000–0.000) | 0.001 (0.001–0.001) | 0.000 (0.000–0.000) | 0.002 (0.002–0.003) | 0.005 (0.005–0.006) |
+| the selection moved by an arrow | 0.002 (0.002–0.009) | 0.005 (0.005–0.007) | 0.018 (0.017–0.023) | 0.002 (0.002–0.002) | 0.120 (0.118–0.151) | 0.146 (0.144–0.185) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.001 (0.000–0.001) | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.003 (0.003–0.007) | 0.004 (0.004–0.008) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 332, 539.1 | 5188, 285.4 | 1993, 307.0 | 497, 56.2 |
+| the list focused by Tab | 8, 0.5 | 0, 0.0 | 1, 0.0 | 1, 0.0 | 16, 18.5 |
+| the selection moved by an arrow | 2, 0.3 | 5, 0.3 | 258, 51.2 | 37, 0.3 | 1402, 768.1 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 14, 18.5 |
+
+Memory held, against before the screen opened: its data alone, 0.01 MB; open and still, 0.45 MB; after the script and the screen closed, 0.40 MB.
+
+</details>
+
+<details>
+<summary>Views that say they changed</summary>
+
+#### "Hello, World!"
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 1 | 1, 0.348 (0.326–0.470) | 1 | 4 | 1 | 4 | 4 / 4 (100.0 %) | 0 of 4 |
+| its button pressed | 1 | 1, 0.094 (0.089–0.114) | 0 | 1 | 0 | 1 | 0 / 4 (0.0 %) | 0 of 4 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 4 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.005 (0.005–0.026) | 0.248 (0.235–0.285) | 0.089 (0.084–0.193) | 0.002 (0.002–0.003) | 0.348 (0.326–0.470) |
+| its button pressed | 0.002 (0.002–0.005) | 0.008 (0.007–0.027) | 0.083 (0.078–0.094) | 0.000 (0.000–0.000) | 0.002 (0.002–0.002) | 0.094 (0.089–0.114) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.001 (0.000–0.005) | 0.000 (0.000–0.000) | 0.001 (0.000–0.001) | 0.002 (0.001–0.006) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 22, 24.6 | 4501, 242.3 | 408, 87.1 | 34, 3.1 |
+| its button pressed | 3, 0.2 | 0, 0.0 | 1408, 68.6 | 1, 0.0 | 18, 1.8 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 6, 0.7 |
+
+Memory held, against before the screen opened: its data alone, 0.00 MB; open and still, 0.07 MB; after the script and the screen closed, 0.06 MB.
+
+#### Slatty's library
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 2.393 (2.308–3.221) | 3 | 320 | 2 | 320 | 218 / 225 (96.9 %) | 0 of 218 |
+| scrolled, 16 logical pixels a frame | 1200 | 1, 0.096 (0.092–0.110) | 181 | 4276 | 181 | 412560 | 275340 / 283453 (97.1 %) | 0 of 247 |
+| the filter focused by Tab | 1 | 1, 0.030 (0.029–0.039) | 0 | 1 | 0 | 1 | 1 / 248 (0.4 %) | 0 of 248 |
+| a filter typed, a character a frame | 5 | 1, 2.067 (2.006–2.796) | 9 | 1020 | 5 | 1028 | 692 / 720 (96.1 %) | 0 of 208 |
+| the grid focused by Tab | 1 | 1, 0.028 (0.027–0.036) | 0 | 3 | 0 | 2 | 0 / 207 (0.0 %) | 0 of 207 |
+| the selection moved by the arrows | 39 | 1, 0.920 (0.892–1.031) | 6 | 320 | 3 | 427 | 248 / 8500 (2.9 %) | 0 of 218 |
+| a game's page opened, its key art fading in | 45 | 1, 0.620 (0.607–0.704) | 2 | 5 | 1 | 48 | 49 / 10035 (0.5 %) | 0 of 223 |
+| the page closed | 1 | 1, 0.246 (0.236–0.314) | 2 | 1 | 1 | 0 | 0 / 218 (0.0 %) | 0 of 218 |
+| the theme changed | 37 | 1, 0.881 (0.864–0.972) | 2 | 320 | 0 | 11840 | 3924 / 8066 (48.6 %) | 0 of 218 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 218 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.265 (0.220–0.966) | 0.564 (0.545–0.615) | 1.456 (1.419–1.599) | 0.117 (0.110–0.145) | 2.393 (2.308–3.221) |
+| scrolled, 16 logical pixels a frame | 3.468 (3.431–3.968) | 34.912 (34.257–37.187) | 3.086 (3.010–3.228) | 35.062 (34.415–36.939) | 106.145 (104.298–109.592) | 182.406 (179.413–190.425) |
+| the filter focused by Tab | 0.005 (0.005–0.009) | 0.000 (0.000–0.000) | 0.003 (0.002–0.004) | 0.000 (0.000–0.000) | 0.022 (0.021–0.030) | 0.030 (0.029–0.039) |
+| a filter typed, a character a frame | 0.051 (0.049–0.056) | 3.224 (3.161–3.970) | 0.355 (0.327–0.408) | 2.451 (2.414–2.622) | 0.313 (0.293–0.363) | 6.415 (6.297–7.252) |
+| the grid focused by Tab | 0.006 (0.005–0.007) | 0.001 (0.001–0.001) | 0.004 (0.003–0.005) | 0.000 (0.000–0.000) | 0.017 (0.016–0.023) | 0.028 (0.027–0.036) |
+| the selection moved by the arrows | 0.003 (0.003–0.005) | 0.606 (0.580–0.746) | 0.123 (0.117–0.146) | 0.589 (0.579–0.634) | 0.550 (0.524–0.615) | 1.879 (1.807–2.146) |
+| a game's page opened, its key art fading in | 0.002 (0.002–0.003) | 0.183 (0.175–0.241) | 0.302 (0.285–0.373) | 0.142 (0.138–0.159) | 0.558 (0.523–0.724) | 1.188 (1.138–1.374) |
+| the page closed | 0.001 (0.001–0.001) | 0.180 (0.172–0.235) | 0.003 (0.003–0.004) | 0.048 (0.046–0.060) | 0.014 (0.013–0.016) | 0.246 (0.236–0.314) |
+| the theme changed | 0.002 (0.002–0.011) | 0.181 (0.175–0.213) | 2.398 (2.340–2.923) | 0.003 (0.002–0.004) | 3.310 (3.094–4.637) | 5.895 (5.657–7.759) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.001) | 0.001 (0.000–0.001) | 0.000 (0.000–0.000) | 0.014 (0.013–0.020) | 0.015 (0.014–0.022) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 1231, 3283.0 | 8756, 471.6 | 8470, 915.6 | 1723, 257.1 |
+| scrolled, 16 logical pixels a frame | 1201, 38.4 | 211046, 133283.5 | 4614, 236.4 | 161883, 43431.6 | 2106546, 291652.8 |
+| the filter focused by Tab | 14, 5.0 | 0, 0.0 | 1, 0.0 | 1, 0.0 | 53, 87.5 |
+| a filter typed, a character a frame | 207, 23.6 | 44053, 6095.1 | 1023, 19.0 | 19512, 1399.7 | 5345, 731.6 |
+| the grid focused by Tab | 18, 4.8 | 0, 0.0 | 4, 0.1 | 1, 0.0 | 48, 79.0 |
+| the selection moved by the arrows | 6, 0.8 | 3440, 2248.2 | 702, 87.5 | 6084, 374.7 | 2587, 3178.4 |
+| a game's page opened, its key art fading in | 3, 0.3 | 1126, 689.2 | 4555, 272.3 | 506, 56.0 | 971, 3503.6 |
+| the page closed | 5, 0.3 | 1109, 682.2 | 3, 0.9 | 183, 31.8 | 18, 77.2 |
+| the theme changed | 8, 0.3 | 1109, 682.2 | 44004, 8718.4 | 37, 0.3 | 61010, 8512.0 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 18, 77.2 |
+
+Memory held, against before the screen opened: its data alone, 0.65 MB; open and still, 2.61 MB; after the script and the screen closed, 6.43 MB.
+
+#### Opium's songs
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 2.621 (2.554–2.842) | 4 | 218 | 2 | 218 | 169 / 181 (93.4 %) | 0 of 169 |
+| scrolled from end to end, 16 logical pixels a frame | 27625 | 1, 0.330 (0.313–0.383) | 16948 | 67792 | 16948 | 5881272 | 4412940 / 4755405 (92.8 %) | 0 of 168 |
+| a column sorted by a click on its header | 37 | 1, 2.539 (2.280–3.501) | 2 | 1 | 1 | 193 | 171 / 6216 (2.8 %) | 0 of 168 |
+| the table focused by Tab, from the header | 3 | 1, 0.015 (0.015–0.026) | 0 | 6 | 0 | 3 | 0 / 504 (0.0 %) | 0 of 168 |
+| the selection moved by the arrows | 39 | 1, 1.597 (1.497–2.299) | 6 | 212 | 1 | 320 | 265 / 6661 (4.0 %) | 0 of 169 |
+| the theme changed | 37 | 1, 1.336 (1.291–1.496) | 2 | 218 | 0 | 8066 | 5076 / 6253 (81.2 %) | 0 of 169 |
+| a song played by Enter | 37 | 1, 0.302 (0.289–0.364) | 39 | 8 | 1 | 75 | 39 / 6253 (0.6 %) | 0 of 169 |
+| each frame while a song plays, its wave moving | 240 | 1, 0.010 (0.010–0.042) | 240 | 0 | 0 | 240 | 11 / 40671 (0.0 %) | 0 of 170 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 169 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.223 (0.202–0.328) | 0.886 (0.848–0.970) | 1.379 (1.339–1.495) | 0.132 (0.126–0.138) | 2.621 (2.554–2.842) |
+| scrolled from end to end, 16 logical pixels a frame | 46.988 (45.524–55.949) | 2112.932 (2062.650–2253.293) | 60.259 (58.280–66.547) | 976.332 (957.462–1058.192) | 2396.983 (2354.497–2525.537) | 5598.537 (5480.185–5959.518) |
+| a column sorted by a click on its header | 0.014 (0.014–0.021) | 1.390 (1.162–2.273) | 0.140 (0.136–0.158) | 0.803 (0.782–0.895) | 0.530 (0.506–0.589) | 2.888 (2.617–3.847) |
+| the table focused by Tab, from the header | 0.008 (0.008–0.016) | 0.000 (0.000–0.001) | 0.004 (0.004–0.005) | 0.000 (0.000–0.000) | 0.027 (0.026–0.041) | 0.040 (0.039–0.057) |
+| the selection moved by the arrows | 0.003 (0.003–0.004) | 0.535 (0.502–1.174) | 0.117 (0.096–0.134) | 1.040 (0.999–1.159) | 0.528 (0.506–0.590) | 2.233 (2.114–2.989) |
+| the theme changed | 0.002 (0.002–0.003) | 0.129 (0.125–0.155) | 2.334 (2.257–2.666) | 0.003 (0.002–0.005) | 5.968 (5.723–6.759) | 8.437 (8.110–9.563) |
+| a song played by Enter | 0.002 (0.002–0.003) | 0.194 (0.187–0.249) | 0.099 (0.095–0.119) | 0.067 (0.065–0.086) | 0.323 (0.298–0.395) | 0.689 (0.652–0.828) |
+| each frame while a song plays, its wave moving | 0.006 (0.006–0.007) | 0.350 (0.328–0.533) | 0.023 (0.021–0.040) | 0.012 (0.011–0.022) | 1.994 (1.869–2.550) | 2.385 (2.236–3.151) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.001) | 0.001 (0.000–0.001) | 0.000 (0.000–0.000) | 0.010 (0.010–0.018) | 0.011 (0.011–0.019) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 1015, 1838.6 | 16968, 929.0 | 9662, 969.0 | 1805, 270.1 |
+| scrolled from end to end, 16 logical pixels a frame | 27542, 881.3 | 15159988, 8503130.3 | 84740, 4677.6 | 5552861, 724808.4 | 43962991, 5669253.5 |
+| a column sorted by a click on its header | 3, 0.2 | 914, 639.3 | 1384, 91.6 | 6323, 429.6 | 3439, 2944.8 |
+| the table focused by Tab, from the header | 30, 2.7 | 0, 0.0 | 6, 0.1 | 3, 0.0 | 83, 217.5 |
+| the selection moved by the arrows | 6, 0.8 | 2827, 2839.8 | 591, 81.9 | 8050, 619.0 | 3699, 3101.5 |
+| the theme changed | 8, 0.3 | 912, 503.3 | 42296, 6553.8 | 37, 0.3 | 98414, 12292.2 |
+| a song played by Enter | 3, 0.3 | 1251, 796.5 | 1386, 89.1 | 287, 25.2 | 1009, 2710.3 |
+| each frame while a song plays, its wave moving | 0, 0.0 | 2160, 1900.3 | 0, 0.0 | 240, 1.9 | 5520, 17438.6 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 19, 71.7 |
+
+Memory held, against before the screen opened: its data alone, 1.39 MB; open and still, 2.61 MB; after the script and the screen closed, 38.79 MB.
+
+#### A document of 100,000 lines
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 1.512 (1.426–1.607) | 3 | 74 | 2 | 74 | 75 / 78 (96.2 %) | 0 of 75 |
+| a line that shows changed | 1 | 1, 0.075 (0.070–0.082) | 2 | 0 | 1 | 1 | 1 / 75 (1.3 %) | 0 of 75 |
+| a line that does not show changed | 1 | 1, 0.045 (0.044–0.066) | 2 | 0 | 0 | 0 | 0 / 75 (0.0 %) | 0 of 75 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 75 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.001) | 0.077 (0.062–0.087) | 0.221 (0.197–0.249) | 1.162 (1.118–1.279) | 0.049 (0.045–0.052) | 1.512 (1.426–1.607) |
+| a line that shows changed | 0.000 (0.000–0.000) | 0.047 (0.043–0.052) | 0.000 (0.000–0.000) | 0.021 (0.021–0.025) | 0.005 (0.005–0.006) | 0.075 (0.070–0.082) |
+| a line that does not show changed | 0.000 (0.000–0.000) | 0.041 (0.040–0.060) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.004 (0.004–0.007) | 0.045 (0.044–0.066) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.001) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.004 (0.003–0.014) | 0.005 (0.004–0.016) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 324, 803.0 | 3205, 174.7 | 3127, 753.5 | 754, 107.1 |
+| a line that shows changed | 0, 0.0 | 247, 164.7 | 0, 0.0 | 119, 11.7 | 23, 37.1 |
+| a line that does not show changed | 0, 0.0 | 246, 164.7 | 0, 0.0 | 1, 0.0 | 13, 36.4 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 13, 36.4 |
+
+Memory held, against before the screen opened: its data alone, 10.75 MB; open and still, 11.73 MB; after the script and the screen closed, 0.92 MB.
+
+#### A notify forgotten
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 0.629 (0.619–0.667) | 3 | 47 | 2 | 47 | 49 / 52 (94.2 %) | 0 of 49 |
+| the list focused by Tab | 1 | 1, 0.005 (0.005–0.010) | 0 | 1 | 0 | 1 | 0 / 49 (0.0 %) | 0 of 49 |
+| the selection moved by an arrow | 1 | 1, 0.004 (0.004–0.010) | 0 | 0 | 0 | 0 | 0 / 49 (0.0 %) | 2 of 49 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 49 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.036 (0.036–0.051) | 0.241 (0.236–0.250) | 0.323 (0.317–0.345) | 0.026 (0.025–0.027) | 0.629 (0.619–0.667) |
+| the list focused by Tab | 0.001 (0.001–0.002) | 0.000 (0.000–0.000) | 0.001 (0.001–0.001) | 0.000 (0.000–0.000) | 0.002 (0.002–0.006) | 0.005 (0.005–0.010) |
+| the selection moved by an arrow | 0.001 (0.001–0.002) | 0.001 (0.001–0.001) | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.002 (0.002–0.005) | 0.004 (0.004–0.010) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.003 (0.002–0.004) | 0.004 (0.003–0.005) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 219, 424.3 | 4198, 231.2 | 1852, 295.9 | 481, 55.3 |
+| the list focused by Tab | 7, 0.5 | 0, 0.0 | 1, 0.0 | 1, 0.0 | 14, 18.4 |
+| the selection moved by an arrow | 2, 0.3 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 12, 18.4 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 12, 18.4 |
+
+Memory held, against before the screen opened: its data alone, 0.00 MB; open and still, 0.43 MB; after the script and the screen closed, 0.39 MB.
+
+#### A view within a view changed without its own notify
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 0.735 (0.722–0.760) | 4 | 50 | 2 | 50 | 50 / 54 (92.6 %) | 0 of 50 |
+| the list focused by Tab | 1 | 1, 0.005 (0.005–0.006) | 0 | 1 | 0 | 1 | 0 / 50 (0.0 %) | 0 of 50 |
+| the row selected played by Enter | 1 | 1, 0.004 (0.004–0.012) | 0 | 0 | 0 | 0 | 0 / 50 (0.0 %) | 1 of 50 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 50 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.041 (0.040–0.048) | 0.299 (0.295–0.314) | 0.364 (0.357–0.381) | 0.028 (0.027–0.034) | 0.735 (0.722–0.760) |
+| the list focused by Tab | 0.001 (0.001–0.002) | 0.000 (0.000–0.000) | 0.001 (0.001–0.001) | 0.000 (0.000–0.000) | 0.003 (0.002–0.003) | 0.005 (0.005–0.006) |
+| the row selected played by Enter | 0.001 (0.001–0.002) | 0.001 (0.001–0.002) | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.002 (0.002–0.010) | 0.004 (0.004–0.012) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.003 (0.003–0.007) | 0.004 (0.004–0.008) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 231, 437.9 | 5189, 285.4 | 2010, 313.2 | 496, 56.2 |
+| the list focused by Tab | 8, 0.5 | 0, 0.0 | 1, 0.0 | 1, 0.0 | 16, 18.5 |
+| the row selected played by Enter | 3, 0.3 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 14, 18.5 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 14, 18.5 |
+
+Memory held, against before the screen opened: its data alone, 0.00 MB; open and still, 0.44 MB; after the script and the screen closed, 0.40 MB.
+
+</details>
+
+<details>
+<summary>Messages</summary>
+
+#### "Hello, World!"
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 1 | 1, 0.335 (0.317–0.436) | 1 | 4 | 1 | 4 | 4 / 4 (100.0 %) | 0 of 4 |
+| its button pressed | 1 | 1, 0.098 (0.093–0.148) | 1 | 1 | 0 | 1 | 0 / 4 (0.0 %) | 0 of 4 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 4 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.005 (0.005–0.023) | 0.240 (0.226–0.272) | 0.086 (0.083–0.176) | 0.002 (0.002–0.003) | 0.335 (0.317–0.436) |
+| its button pressed | 0.002 (0.002–0.004) | 0.012 (0.012–0.023) | 0.082 (0.077–0.131) | 0.000 (0.000–0.000) | 0.002 (0.002–0.002) | 0.098 (0.093–0.148) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.000 (0.000–0.004) | 0.000 (0.000–0.000) | 0.000 (0.000–0.001) | 0.001 (0.001–0.006) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 21, 20.9 | 4501, 242.3 | 408, 87.1 | 34, 3.1 |
+| its button pressed | 3, 0.2 | 18, 4.8 | 1408, 68.6 | 1, 0.0 | 18, 1.8 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 6, 0.7 |
+
+Memory held, against before the screen opened: its data alone, 0.00 MB; open and still, 0.07 MB; after the script and the screen closed, 0.06 MB.
+
+#### Slatty's library
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 2.306 (2.241–3.154) | 107 | 320 | 2 | 320 | 218 / 225 (96.9 %) | 0 of 218 |
+| scrolled, 16 logical pixels a frame | 1200 | 1, 0.092 (0.089–0.116) | 20551 | 4276 | 181 | 412560 | 275340 / 283453 (97.1 %) | 0 of 247 |
+| the filter focused by Tab | 1 | 1, 0.028 (0.027–0.049) | 0 | 1 | 0 | 1 | 1 / 248 (0.4 %) | 0 of 248 |
+| a filter typed, a character a frame | 5 | 1, 2.011 (1.879–2.971) | 345 | 1020 | 5 | 1028 | 692 / 720 (96.1 %) | 0 of 208 |
+| the grid focused by Tab | 1 | 1, 0.026 (0.025–0.057) | 0 | 3 | 0 | 2 | 0 / 207 (0.0 %) | 0 of 207 |
+| the selection moved by the arrows | 39 | 1, 0.877 (0.857–1.335) | 318 | 320 | 3 | 427 | 248 / 8500 (2.9 %) | 0 of 218 |
+| a game's page opened, its key art fading in | 45 | 1, 0.579 (0.560–0.701) | 106 | 5 | 1 | 48 | 49 / 10035 (0.5 %) | 0 of 223 |
+| the page closed | 1 | 1, 0.217 (0.209–0.295) | 106 | 1 | 1 | 0 | 0 / 218 (0.0 %) | 0 of 218 |
+| the theme changed | 37 | 1, 0.845 (0.826–0.944) | 106 | 320 | 0 | 11840 | 3924 / 8066 (48.6 %) | 0 of 218 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 218 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.244 (0.213–0.728) | 0.543 (0.525–0.609) | 1.407 (1.379–1.640) | 0.112 (0.108–0.177) | 2.306 (2.241–3.154) |
+| scrolled, 16 logical pixels a frame | 3.303 (3.243–3.692) | 30.132 (29.646–31.097) | 2.861 (2.812–2.980) | 33.489 (33.003–34.938) | 101.767 (99.954–105.363) | 171.565 (168.686–178.069) |
+| the filter focused by Tab | 0.005 (0.005–0.009) | 0.000 (0.000–0.001) | 0.003 (0.002–0.005) | 0.000 (0.000–0.000) | 0.021 (0.020–0.035) | 0.028 (0.027–0.049) |
+| a filter typed, a character a frame | 0.049 (0.047–0.061) | 3.001 (2.929–3.904) | 0.346 (0.263–0.416) | 2.380 (2.312–2.545) | 0.296 (0.287–0.350) | 6.076 (5.843–7.051) |
+| the grid focused by Tab | 0.006 (0.005–0.015) | 0.001 (0.001–0.002) | 0.004 (0.003–0.007) | 0.000 (0.000–0.000) | 0.016 (0.015–0.033) | 0.026 (0.025–0.057) |
+| the selection moved by the arrows | 0.003 (0.003–0.006) | 0.534 (0.517–0.804) | 0.120 (0.115–0.255) | 0.567 (0.551–0.675) | 0.510 (0.485–0.552) | 1.731 (1.696–2.292) |
+| a game's page opened, its key art fading in | 0.002 (0.002–0.004) | 0.156 (0.149–0.247) | 0.295 (0.285–0.309) | 0.135 (0.130–0.163) | 0.514 (0.491–0.581) | 1.105 (1.068–1.278) |
+| the page closed | 0.001 (0.001–0.002) | 0.153 (0.148–0.216) | 0.003 (0.003–0.009) | 0.045 (0.044–0.057) | 0.013 (0.013–0.022) | 0.217 (0.209–0.295) |
+| the theme changed | 0.002 (0.002–0.003) | 0.153 (0.146–0.193) | 2.342 (2.289–2.653) | 0.003 (0.003–0.004) | 3.194 (3.118–3.535) | 5.695 (5.616–6.386) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.001) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.013 (0.013–0.029) | 0.014 (0.014–0.031) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 1242, 3097.6 | 8756, 471.6 | 8470, 915.6 | 1723, 257.1 |
+| scrolled, 16 logical pixels a frame | 1201, 38.4 | 213037, 97842.9 | 4614, 236.4 | 161883, 43431.6 | 2106546, 291652.8 |
+| the filter focused by Tab | 14, 5.0 | 0, 0.0 | 1, 0.0 | 1, 0.0 | 53, 87.5 |
+| a filter typed, a character a frame | 207, 23.6 | 44073, 5474.0 | 1023, 19.0 | 19512, 1399.7 | 5345, 731.6 |
+| the grid focused by Tab | 18, 4.8 | 0, 0.0 | 4, 0.1 | 1, 0.0 | 48, 79.0 |
+| the selection moved by the arrows | 6, 0.8 | 3443, 1667.0 | 702, 87.5 | 6084, 374.7 | 2587, 3178.4 |
+| a game's page opened, its key art fading in | 3, 0.3 | 1126, 495.5 | 4555, 272.3 | 506, 56.0 | 971, 3503.6 |
+| the page closed | 5, 0.3 | 1110, 488.4 | 3, 0.9 | 183, 31.8 | 18, 77.2 |
+| the theme changed | 8, 0.3 | 1110, 488.4 | 44004, 8718.4 | 37, 0.3 | 61010, 8512.0 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 18, 77.2 |
+
+Memory held, against before the screen opened: its data alone, 0.65 MB; open and still, 2.61 MB; after the script and the screen closed, 6.43 MB.
+
+#### Opium's songs
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 2.574 (2.464–2.675) | 30 | 218 | 2 | 218 | 169 / 181 (93.4 %) | 0 of 169 |
+| scrolled from end to end, 16 logical pixels a frame | 27625 | 1, 0.288 (0.270–0.325) | 483018 | 67792 | 16948 | 5881272 | 4412940 / 4755405 (92.8 %) | 0 of 168 |
+| a column sorted by a click on its header | 37 | 1, 2.436 (2.206–2.573) | 28 | 1 | 1 | 193 | 171 / 6216 (2.8 %) | 0 of 168 |
+| the table focused by Tab, from the header | 3 | 1, 0.015 (0.014–0.025) | 0 | 6 | 0 | 3 | 0 / 504 (0.0 %) | 0 of 168 |
+| the selection moved by the arrows | 39 | 1, 1.546 (1.466–1.646) | 84 | 212 | 1 | 320 | 265 / 6661 (4.0 %) | 0 of 169 |
+| the theme changed | 37 | 1, 1.212 (1.172–1.270) | 1 | 218 | 0 | 8066 | 5076 / 6253 (81.2 %) | 0 of 169 |
+| a song played by Enter | 37 | 1, 0.284 (0.271–0.323) | 64 | 8 | 1 | 75 | 39 / 6253 (0.6 %) | 0 of 169 |
+| each frame while a song plays, its wave moving | 240 | 1, 0.014 (0.013–0.026) | 240 | 0 | 0 | 240 | 11 / 40671 (0.0 %) | 0 of 170 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 169 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.001) | 0.218 (0.192–0.266) | 0.863 (0.829–0.925) | 1.362 (1.295–1.431) | 0.128 (0.124–0.139) | 2.574 (2.464–2.675) |
+| scrolled from end to end, 16 logical pixels a frame | 45.387 (44.241–52.907) | 1874.705 (1859.498–1946.747) | 56.285 (54.858–60.105) | 937.780 (922.345–1005.262) | 2307.635 (2281.710–2415.539) | 5224.382 (5172.208–5480.559) |
+| a column sorted by a click on its header | 0.014 (0.013–0.016) | 1.336 (1.139–1.430) | 0.136 (0.133–0.162) | 0.777 (0.734–0.820) | 0.498 (0.486–0.556) | 2.747 (2.518–2.907) |
+| the table focused by Tab, from the header | 0.008 (0.008–0.010) | 0.000 (0.000–0.001) | 0.004 (0.004–0.006) | 0.000 (0.000–0.000) | 0.025 (0.024–0.037) | 0.038 (0.036–0.054) |
+| the selection moved by the arrows | 0.003 (0.003–0.004) | 0.497 (0.471–0.532) | 0.111 (0.091–0.136) | 1.004 (0.972–1.063) | 0.497 (0.482–0.580) | 2.111 (2.021–2.240) |
+| the theme changed | 0.002 (0.002–0.002) | 0.012 (0.011–0.022) | 2.329 (2.272–2.503) | 0.003 (0.003–0.003) | 5.902 (5.737–6.033) | 8.250 (8.028–8.564) |
+| a song played by Enter | 0.002 (0.002–0.003) | 0.311 (0.295–0.360) | 0.101 (0.093–0.121) | 0.065 (0.064–0.088) | 0.324 (0.308–0.386) | 0.797 (0.774–0.933) |
+| each frame while a song plays, its wave moving | 0.006 (0.006–0.007) | 1.229 (1.166–1.434) | 0.026 (0.022–0.042) | 0.010 (0.010–0.015) | 1.995 (1.905–2.444) | 3.274 (3.148–3.942) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.000 (0.000–0.007) | 0.000 (0.000–0.000) | 0.010 (0.009–0.015) | 0.011 (0.010–0.018) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 1041, 1802.2 | 16968, 929.0 | 9662, 969.0 | 1805, 270.1 |
+| scrolled from end to end, 16 logical pixels a frame | 27542, 881.3 | 15532844, 7988487.3 | 84740, 4677.6 | 5552861, 724808.4 | 43962991, 5669253.5 |
+| a column sorted by a click on its header | 3, 0.2 | 926, 597.8 | 1384, 91.6 | 6323, 429.6 | 3439, 2944.8 |
+| the table focused by Tab, from the header | 30, 2.7 | 0, 0.0 | 6, 0.1 | 3, 0.0 | 83, 217.5 |
+| the selection moved by the arrows | 6, 0.8 | 2863, 2715.4 | 591, 81.9 | 8050, 619.0 | 3699, 3101.5 |
+| the theme changed | 8, 0.3 | 41, 13.9 | 42295, 6553.6 | 37, 0.3 | 98414, 12292.2 |
+| a song played by Enter | 3, 0.3 | 2479, 963.7 | 1386, 89.1 | 287, 25.2 | 1009, 2710.3 |
+| each frame while a song plays, its wave moving | 0, 0.0 | 10320, 3344.4 | 0, 0.0 | 240, 1.9 | 5520, 17438.6 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 19, 71.7 |
+
+Memory held, against before the screen opened: its data alone, 1.39 MB; open and still, 2.61 MB; after the script and the screen closed, 38.79 MB.
+
+#### A document of 100,000 lines
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 1.504 (1.424–1.657) | 74 | 74 | 2 | 74 | 75 / 78 (96.2 %) | 0 of 75 |
+| a line that shows changed | 1 | 1, 0.064 (0.061–0.080) | 73 | 0 | 1 | 1 | 1 / 75 (1.3 %) | 0 of 75 |
+| a line that does not show changed | 1 | 1, 0.037 (0.036–0.058) | 73 | 0 | 0 | 0 | 0 / 75 (0.0 %) | 0 of 75 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 75 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.071 (0.057–0.085) | 0.216 (0.199–0.244) | 1.165 (1.114–1.289) | 0.049 (0.046–0.055) | 1.504 (1.424–1.657) |
+| a line that shows changed | 0.000 (0.000–0.001) | 0.038 (0.035–0.046) | 0.000 (0.000–0.000) | 0.021 (0.020–0.027) | 0.005 (0.005–0.006) | 0.064 (0.061–0.080) |
+| a line that does not show changed | 0.000 (0.000–0.000) | 0.033 (0.032–0.052) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.004 (0.003–0.006) | 0.037 (0.036–0.058) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.001) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.004 (0.003–0.014) | 0.005 (0.004–0.016) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 327, 663.9 | 3205, 174.7 | 3127, 753.5 | 754, 107.1 |
+| a line that shows changed | 0, 0.0 | 248, 25.6 | 0, 0.0 | 119, 11.7 | 23, 37.1 |
+| a line that does not show changed | 0, 0.0 | 247, 25.5 | 0, 0.0 | 1, 0.0 | 13, 36.4 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 13, 36.4 |
+
+Memory held, against before the screen opened: its data alone, 10.75 MB; open and still, 11.73 MB; after the script and the screen closed, 0.92 MB.
+
+#### A lazy value that leaves out the row playing
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 0.631 (0.619–0.689) | 49 | 47 | 2 | 47 | 49 / 52 (94.2 %) | 0 of 49 |
+| the list focused by Tab | 1 | 1, 0.005 (0.005–0.007) | 0 | 1 | 0 | 1 | 0 / 49 (0.0 %) | 0 of 49 |
+| the row selected played by Enter | 1 | 1, 0.006 (0.006–0.013) | 1 | 0 | 0 | 0 | 0 / 49 (0.0 %) | 1 of 49 |
+| A frame where nothing changed | 1 | — | 0 | 0 | 0 | 0 | 0 / 49 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.037 (0.035–0.048) | 0.239 (0.233–0.255) | 0.325 (0.321–0.369) | 0.025 (0.025–0.030) | 0.631 (0.619–0.689) |
+| the list focused by Tab | 0.001 (0.001–0.003) | 0.000 (0.000–0.000) | 0.001 (0.001–0.001) | 0.000 (0.000–0.000) | 0.002 (0.002–0.003) | 0.005 (0.005–0.007) |
+| the row selected played by Enter | 0.001 (0.001–0.002) | 0.003 (0.003–0.004) | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.002 (0.002–0.006) | 0.006 (0.006–0.013) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.000 (0.000–0.000) | 0.000 (0.000–0.001) | 0.000 (0.000–0.000) | 0.003 (0.002–0.003) | 0.004 (0.003–0.005) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 227, 336.5 | 4198, 231.2 | 1852, 295.9 | 481, 55.3 |
+| the list focused by Tab | 7, 0.5 | 0, 0.0 | 1, 0.0 | 1, 0.0 | 14, 18.4 |
+| the row selected played by Enter | 3, 0.3 | 9, 0.6 | 0, 0.0 | 1, 0.0 | 12, 18.4 |
+| A frame where nothing changed | 0, 0.0 | 0, 0.0 | 0, 0.0 | 1, 0.0 | 12, 18.4 |
+
+Memory held, against before the screen opened: its data alone, 0.00 MB; open and still, 0.43 MB; after the script and the screen closed, 0.39 MB.
+
+#### Frames not given up
+
+| Interaction | Frames | Delay: frames, CPU ms | Code run | Elements styled | Layouts | Elements drawn again | Items changed / all | Items wrong |
+|---|---|---|---|---|---|---|---|---|
+| opened | 2 | 2, 0.641 (0.629–0.679) | 47 | 47 | 2 | 47 | 49 / 52 (94.2 %) | 0 of 49 |
+| the list focused by Tab | 1 | 1, 0.026 (0.026–0.035) | 46 | 1 | 0 | 1 | 0 / 49 (0.0 %) | 0 of 49 |
+| the selection moved by an arrow | 37 | 1, 0.028 (0.028–0.035) | 1702 | 2 | 0 | 74 | 71 / 1848 (3.8 %) | 0 of 49 |
+| A frame where nothing changed | 1 | — | 46 | 0 | 0 | 0 | 0 / 49 | — |
+
+Processor time of each phase, in ms, the median of 21 runs (range):
+
+| Interaction | input | application | styles | layout | display list | Whole |
+|---|---|---|---|---|---|---|
+| opened | 0.000 (0.000–0.000) | 0.036 (0.035–0.044) | 0.243 (0.234–0.282) | 0.333 (0.328–0.347) | 0.026 (0.025–0.027) | 0.641 (0.629–0.679) |
+| the list focused by Tab | 0.001 (0.001–0.002) | 0.021 (0.021–0.030) | 0.001 (0.001–0.001) | 0.000 (0.000–0.000) | 0.003 (0.003–0.003) | 0.026 (0.026–0.035) |
+| the selection moved by an arrow | 0.002 (0.002–0.002) | 0.758 (0.743–0.780) | 0.025 (0.024–0.027) | 0.002 (0.002–0.003) | 0.123 (0.119–0.147) | 0.910 (0.892–0.942) |
+| A frame where nothing changed | 0.000 (0.000–0.000) | 0.025 (0.024–0.030) | 0.001 (0.001–0.001) | 0.000 (0.000–0.000) | 0.003 (0.003–0.011) | 0.028 (0.028–0.039) |
+
+Allocations of each phase, and the kB that they took:
+
+| Interaction | input | application | styles | layout | display list |
+|---|---|---|---|---|---|
+| opened | 0, 0.0 | 233, 337.1 | 4198, 231.2 | 1852, 295.9 | 481, 55.3 |
+| the list focused by Tab | 7, 0.5 | 166, 12.6 | 2, 0.4 | 1, 0.0 | 14, 18.4 |
+| the selection moved by an arrow | 2, 0.3 | 6142, 467.8 | 295, 64.5 | 37, 0.3 | 1328, 763.9 |
+| A frame where nothing changed | 0, 0.0 | 166, 12.6 | 1, 0.4 | 1, 0.0 | 12, 18.4 |
+
+Memory held, against before the screen opened: its data alone, 0.00 MB; open and still, 0.43 MB; after the script and the screen closed, 0.39 MB.
+
+</details>
