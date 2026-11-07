@@ -1950,3 +1950,107 @@ dynamic view's.
 
 Not measured: the compiler's part of a reload; the owner's laptop; a reload on the web and on
 Android, which M6d.1c3 weighs.
+
+## The interface's executor, and other threads (2026-11-07)
+
+The interface's tasks, and other threads' changes to signals, on the bench of SlimeEngine's
+milestone M6d.1c2
+([ADR-0211](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0211-the-executor-and-other-threads-through-channels.md)).
+A task runs on the interface's thread, owned by the scope that started it and cancelled with it.
+Its timers follow the frame's clock, and the host waits for the first one's deadline: no thread
+of uwui's sleeps for them. Other threads hold a channel's sender, never a signal: a task of the
+view receives and sets the signals. The application makes the channel before its view, so that a
+reload's new view reads the same receiver.
+
+The screen is Slatty's downloads: a list of 10,000 games, a signal for each game's progress, and a
+label that counts the updates received. The core's thread sends one game's progress, or many
+games' at once in a batch. The executor and the channel are written by hand on the standard
+library, on the branch
+[`m6d1c-bench`](https://github.com/HoneySlatt/SlimeEngine/tree/m6d1c-bench/benches/src/prototypes),
+thrown away once M6d.1 ends.
+
+- Machine: AMD Ryzen 7 5800X, 32 GB, Linux 7.3; the bench pinned to one core, the core's thread
+  on the same core, the machine at rest.
+- Build: release, SlimeEngine's branch `m6d1c-bench` at `ffe4aa5`.
+- Command: `taskset -c 6 target/release/slime-benches --prototypes --threads`, after
+  `cargo build --locked --release -p slime-benches`.
+- Each time: the median of 21 runs, with their range. Each count: the same in all 21 runs, or
+  the bench fails.
+- The host waits as a window's loop would, on a condition variable that the executor's waker
+  notifies. A real window adds its own wake, winit's proxy and the compositor's frame: M6d.7's.
+
+### What the tests show
+
+Each case is a test on the branch, in `signals/threads.rs` and `tasks.rs`.
+
+| Case | What happens |
+|---|---|
+| A page that starts a task waiting an hour, closed | The task is dropped with the page's scope, and its timer forgotten: no deadline left |
+| A task that sleeps 5 s | No frame runs while it waits; the host runs one frame at its deadline, which shows its change |
+| A frame at rest while 1,000 tasks wait, on timers and channels | No task polled, no binding run, nothing allocated by the application, no wake of the host |
+| 10,000 messages from another thread, sent before the frame | One wake of the host; all shown in the next frame |
+| A batch of three games, one far below the rows that show | The batch's poll, the count's label and the two rows that show run; the third game's row is not mounted |
+| Four threads sending 20,000 messages while frames run | All received, no wake lost, in 50 runs of 50 in a release build |
+| More values waiting than a poll's budget of 16,384 | One budget a frame, the rest in the frames after |
+| A reload, one message sent before it and one during it | Both received by the new view's task, the count kept by its name, the sender still valid |
+| The last sender dropped during a reload | The new task receives what was sent, then ends |
+| A channel made within a view, then the view reloaded | The old sender's send fails with `Closed` |
+| A task that wakes itself at each poll | Polled once a frame, each frame asking the next |
+| A task that cancels itself in its own poll | Dropped once its poll ends |
+| A waker kept from a cancelled task, its place taken by a new task | Wakes nothing |
+| The application closed while a task waits on a timer | The task is dropped |
+
+### A change from another thread, to the frame that shows it
+
+| Change | Frames until still | From the send to the frame: ms | The frame's phases: ms, allocations, kB | Code run | Host's wakes |
+|---|---|---|---|---|---|
+| One game's progress, the host waiting | 1 | 0.105 (0.098–0.134) | 0.080 (0.069–0.096), 247, 47.2 | 3 | 1 |
+| 10,000 games' progress, as 10,000 messages | 1 | — | 0.715 (0.698–0.742), 2,435, 345.5 | 47 | 1 |
+| 10,000 games' progress, as one batch | 1 | — | 0.480 (0.473–0.495), 2,433, 345.0 | 47 | 1 |
+
+- *From the send to the frame*: from the core's send to the end of the frame's display list, the
+  host woken from its wait. A run whose host did not wait yet as the change was sent is run
+  again. The bursts are sent whole before the frame, so they have no such delay.
+- *Code run*: the task's polls and the bindings run again. One change runs the task, the count's
+  label and the game's row. A burst runs the task once, the count once, and each of the 46 rows
+  that show but the first, whose progress stays 0.
+- The frame's allocations are the tree's: styles, layout and the display list for the labels that
+  changed. The batch takes 0.24 ms less than the 10,000 messages, each of which is received,
+  applied and counted on its own.
+
+### A frame at rest while tasks wait
+
+| Tasks waiting | The frame: ms, allocations, kB | The application's part: ms, allocations | Code run | Host's wakes | Next deadline |
+|---|---|---|---|---|---|
+| None | 0.001 (0.001–0.001), 5, 0.6 | 0.001 (0.001–0.001), 0 | 0 | 0 | none |
+| 500 on timers, 500 on channels | 0.001 (0.001–0.001), 5, 0.6 | 0.001 (0.001–0.001), 0 | 0 | 0 | 3,600 s |
+
+A frame at rest runs only when something else asks for one: no task asks it. The 5 allocations
+are the tree's own at a still frame, as on the bench's other screens. The application's part
+allocates nothing, with or without tasks waiting. The host learns the first timer's deadline, an
+hour away, and runs no frame before it.
+
+### What tasks cost outside the frames
+
+Counted once, in a test:
+
+- the executor, made with the application: 5 allocations, 0.9 kB;
+- a task spawned: 5 allocations, 0.3 kB, its future's box among them, and the cleanup that its
+  scope runs;
+- a task cancelled: 1 allocation, the free list growing.
+
+The signals' runtime also changed: a change no longer clones the list of what reads the signal.
+On the bench's screens, the application's allocations fell by 1 to 8 an interaction; nothing else
+moved. Without it, the 10,000 messages cost some 10,000 allocations more.
+
+### What they say
+
+- A change from another thread shows in the next frame, its wake included, 0.1 ms after its
+  send on this machine. A burst of 10,000 is taken whole in one frame, under 1 ms.
+- Tasks that wait cost a frame nothing: no poll, no allocation, no wake.
+- The core never holds a signal: what it sends is its own message, a batch or a key.
+- The budget a poll and an unbounded channel are the prototype's: uwui's first stage sets both.
+  Unbounded, what the core sends while no frame runs waits in memory.
+
+Not measured: the owner's laptop; a real window's wake; tokio's channels, which the bench does
+not depend on; a timer's frame against a real display's.
