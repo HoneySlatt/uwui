@@ -728,9 +728,9 @@ beside them on the same bench
 The prototypes are on the branch
 [`m6d1b-bench`](https://github.com/HoneySlatt/SlimeEngine/tree/m6d1b-bench/benches/src/prototypes),
 thrown away once M6d.1b ends. The bench measures as
-[the control's section](#how-the-bench-measures) says, with the additions below. The choice of a
-model waits for M6d.1b3b
-([ADR-0203](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0203-pilots-replaced-pluto-and-a-daw.md)).
+[the control's section](#how-the-bench-measures) says, with the additions below. From them, and
+from what Opium, Pluto and the DAW ask of uwui, the owner chose signals, with live values
+([ADR-0205](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0205-signals-change-uwuis-interface.md)).
 
 - Machine: AMD Ryzen 7 5800X, 32 GB, Linux 7.3; the bench pinned to one core, the machine at
   rest.

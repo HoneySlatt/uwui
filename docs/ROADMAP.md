@@ -167,7 +167,6 @@ until its milestone M6d.10 decides their home.
 
 | Topic | Candidates | Decided at |
 |---|---|---|
-| How an application's state changes its interface | signals, views that say they changed as in GPUI, messages as in Elm, beside today's rebuild by keys as the control, compared as [ADR-0202](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0202-how-m6d1-compares-ways-of-writing-an-application.md) says; [the survey](survey-writing-an-application.md#1-how-state-changes-the-interface); [each screen's ideal code](ideal-code/README.md); [the four measured](measurements.md#three-models-beside-the-control-on-m6d1bs-bench-2026-11-07) | SlimeEngine's M6d.1b3b, once Opium, Pluto's client and the DAW have each said what they ask of uwui ([ADR-0203](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0203-pilots-replaced-pluto-and-a-daw.md)) |
 | The format of layouts | the engine's notation laid out as scene files, a markup of its own, a subset of HTML and CSS; [the survey](survey-writing-an-application.md#2-the-format-of-layouts) | SlimeEngine's M6d.1d |
 | Rust's code reloaded, its state kept | a function's body through `subsecond`, as Iced, GPUI and Rune do; a type's state through a form that does not depend on its layout, or a restart; [the survey](survey-writing-an-application.md#3-the-three-reloads) | SlimeEngine's M6d.1c |
 | Games' interfaces, HUD, inventories, dialogues and interfaces within the world | uwui whole; a host and layers of their own over uwui's core; a framework of their own, weighed from what *Hunna Wood*'s interface costs the game | SlimeEngine's M6d.10 |
@@ -192,6 +191,11 @@ of power.
   application started in one call, its components drawn from their state, events handled by
   closures on the elements, styles written in code beside the themes' files, layouts and Rust's
   code reloaded at once, the state kept.
+- State that changes the interface through signals, and the frame's values through live values,
+  cells that any thread writes and an element reads as it is drawn
+  ([ADR-0205](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0205-signals-change-uwuis-interface.md),
+  chosen from [the four models measured](measurements.md#three-models-beside-the-control-on-m6d1bs-bench-2026-11-07)):
+  a list fed by its changes by key, and a timer at the granularity that it shows.
 - A library of components in layers, as gpui-kit's: behaviour and state in uwui, the look in
   themes, one dependency for an application; chosen from the needs of the first stage's programs,
   tables among them; every component held to the same bar.
