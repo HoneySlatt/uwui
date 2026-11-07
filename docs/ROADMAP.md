@@ -169,7 +169,7 @@ until its milestone M6d.10 decides their home.
 |---|---|---|
 | The format of layouts | the engine's notation laid out as scene files, a markup of its own, a subset of HTML and CSS; [the survey](survey-writing-an-application.md#2-the-format-of-layouts) | SlimeEngine's M6d.1d |
 | Rust's code reloaded, its state kept | a function's body through `subsecond`, as Iced, GPUI and Rune do; a type's state through a form that does not depend on its layout, or a restart; [the survey](survey-writing-an-application.md#3-the-three-reloads) | SlimeEngine's M6d.1c |
-| Games' interfaces, HUD, inventories, dialogues and interfaces within the world | uwui whole; a host and layers of their own over uwui's core; a framework of their own, weighed from what *Hunna Wood*'s interface costs the game | SlimeEngine's M6d.10 |
+| Games' interfaces, HUD, inventories, dialogues and interfaces within the world | uwui's core with a layer of the engine's, the direction that [SlimeEngine's ADR-0209](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0209-platforms-the-editor-and-agents.md) takes, confirmed by a measure of *Hunna Wood*'s HUD and a menu driven by a gamepad, [as the engine proposes it](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/uwui-needs.md#for-m6d10); a framework of their own if it fails | SlimeEngine's M6d.10 |
 | How vector shapes are drawn | by measurement: tessellated on the CPU, distance fields, or stencil then cover | the first stage's drawing |
 
 ## 4. Stages
