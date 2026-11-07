@@ -1841,3 +1841,112 @@ Allocations of each phase, and the kB that they took:
 Memory held, against before the screen opened: its data alone, 0.00 MB; open and still, 0.43 MB; after the script and the screen closed, 0.39 MB.
 
 </details>
+
+## Signals named across a reload (2026-11-07)
+
+Signals' state kept across a reload of its type, on the bench of SlimeEngine's milestone M6d.1c1
+([ADR-0210](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0210-signals-named-for-a-reload.md)).
+On [M6d.1b's bench](#the-reloads-and-a-task-cancelled-with-its-component), signals replayed in the
+order that they were made lost the selection and the page when a signal was added before the
+others. Now an author names the signals whose state a reload keeps,
+`RwSignal::kept("selected", || 0)`. Each kept value is written through `serde` into a
+`serde_json::Value` by its scope's path and its name. The signal of that name then reads it into
+its type as the new code has it. A signal not named starts again.
+
+A scope's path is the keys, from the window's root, of the element that made it. Only rows and
+dynamic views make scopes; the root's holds the rest. A grid's cells are keyed by their items, a
+list's rows and an element's children by their places.
+
+The prototype goes on from M6d.1b's, on the branch
+[`m6d1c-bench`](https://github.com/HoneySlatt/SlimeEngine/tree/m6d1c-bench/benches/src/prototypes),
+thrown away once M6d.1 ends. The bench's comparison with a new interface still replays the root
+scope's signals in their order: it runs the same function again, a tool of the bench and not the
+model's reload. It copies a value that holds signals with their handles, which name the same
+signals in the new interface only when both made them in the same places of their arenas.
+
+- Machine: AMD Ryzen 7 5800X, 32 GB, Linux 7.3; the bench pinned to one core, the machine at
+  rest.
+- Build: release, SlimeEngine's branch `m6d1c-bench` at `72ca87e`.
+- Command: `taskset -c 6 target/release/slime-benches --prototypes --reloads`, after
+  `cargo build --locked --release -p slime-benches`.
+- Each time: the median of 21 runs, with their range. Each count: the same in all 21 runs.
+- The runtime notes what a reload could not keep: the tests read the notes, and `--reloads`
+  fails on any.
+
+### The state kept
+
+Each case is a test on the branch: `signals/library/reload.rs` on Slatty's library, its grid
+scrolled, a filter typed, the selection moved and a game's page open; `signals/kept.rs` apart.
+
+| Change reloaded | What is kept | What the reload says |
+|---|---|---|
+| A body: the field's placeholder changed | All: scroll, selection, the field's text, the filter, the page | Nothing |
+| A signal added before the others, which lost the state on M6d.1b's bench | All | Nothing |
+| A signal renamed, `selected` to `cursor` | All but the selection, which starts again | `` `selected` at [] taken by no signal `` |
+| The page's type changed, a place to a title | All but the page, which starts again: closed | `` `page` started again: invalid type: integer `…`, expected a string `` |
+| A kept struct gains a field, `#[serde(default)]` | Its other fields; the new one at its default | Nothing |
+| A grid's cells reordered, each cell's own kept signal | Each cell's value, by its item | Nothing |
+| A document's lines, a kept value that holds 100,000 signals, one edited | The edit | Nothing |
+| A map keyed by pairs, which the form cannot write | Nothing: it starts again | `` `cells` not kept: key must be a string `` |
+| A kept value that holds a signal, its other field's type changed | Nothing: it starts again; the signal that the failed read made is disposed | `` `panel` started again: … `` |
+| An element added before two dynamic views, each keeping `open` | Each view takes the value that the one before it held at its place, without a word | `` `open` at [Index(0), Index(0)] taken by no signal ``: the value left where no scope is now |
+| Two signals named alike in one scope | A panic at the first run: `` two signals named `page` in one scope `` | — |
+| A part that keeps a signal, used twice in one scope | The same panic, `` two signals named `count` in one scope ``: the part is no scope of its own | — |
+
+### The reload's time
+
+From the reload's call to the frame that shows it, settled, in the program, without a window. Not
+the compiler's part: `subsecond`'s, which M6d.1c3 times. The call writes the kept values, disposes
+the view before, runs the new one, and reads the kept values back. The frames mount the view over
+the tree, whose elements keep their state by their keys, then style, lay out and draw.
+
+| Screen | Kept | The call: ms, allocations, kB | Frames until still | Their phases: ms, allocations, kB | Whole: ms |
+|---|---|---|---|---|---|
+| Slatty's library, its page open | 4 signals | 0.139 (0.135–0.200), 51, 17.1 | 1 | 0.765 (0.741–0.777), 12,064, 1,259.2 | 0.903 (0.877–0.946) |
+| A document of 100,000 lines, one edited | 1 value of 100,000 signals | 13.087 (12.666–28.865), 200,081, 61,771.0 | 1 | 0.133 (0.110–0.245), 1,134, 395.4 | 13.219 (12.800–29.073) |
+
+The library's games are made before the reload, as a program's data loaded at its start, which a
+reload does not load again. The document's lines are the kept value itself: each line is written,
+read and made a signal again, some 130 ns and 2 allocations a line. A first timing, before the
+review's changes at `09dd69d`, gave 0.881 ms and 14.983 ms, the same counts.
+
+### What names cost the bench's screens
+
+The signals' counts at `72ca87e` against `ae40506`, M6d.1b's, on every screen of the bench, two
+runs each. The library's four signals and the document's lines are now kept; the songs' signals
+are not named. The other phases, styles, layout and the display list, count the same.
+
+| Screen | Interaction | The application's allocations, kB: before, after |
+|---|---|---|
+| Slatty's library | opened | 12,125, 4,223.4; 12,137, 4,236.2 |
+| Slatty's library | scrolled | 31,742, 19,717.1; 31,743, 19,729.7 |
+| Slatty's library | a filter typed | 46,712, 7,164.9; 46,713, 7,190.0 |
+| Opium's songs | opened | 2,683, 2,113.6; 2,690, 2,116.7 |
+| Opium's songs | scrolled from end to end | 1,186,364, 329,464.2; 1,186,365, 329,467.4 |
+| A document of 100,000 lines | opened | 1,190, 984.7; 1,198, 997.2 |
+| A signal read outside a closure that the view tracks | opened | 332, 539.1; 340, 545.4 |
+
+The memory held while a screen is open is the same within 0.01 MB: the document's 38.04 MB against
+38.03 MB, the small case's 0.46 MB against 0.45 MB. A first version kept each name and each scope's place in the graph's nodes: the document
+held 2.1 MB more, some 21 bytes a signal. They now live in two maps beside the nodes, which only
+named signals and scopes fill. The allocations more are those maps growing, a list's path and a
+dynamic view's.
+
+### What they say
+
+- Names keep the state across every change that the bench makes but a rename, a type that no
+  longer reads and a value that cannot be written, and the runtime notes those three.
+- A scope's path follows the elements' keys, as the tree's own state does: an element added
+  before a dynamic view, or a list's rows reordered, gives a kept value to another scope; only a
+  value left where no scope is now is noted. A part used twice in one scope names its signals twice. Keys that views give, and a
+  scope for each part that keeps state, would answer both: uwui's first stage decides them.
+- The framework's part of a reload on Slatty's library is under 1 ms: the call 0.14 ms, the frame
+  that shows it 0.77 ms. The time from a change saved to its frame is the compiler's, M6d.1c3's.
+- A large kept value costs by its size: the 100,000 lines, 13 ms. Kept state that holds a
+  program's data, rather than the interface's, is better loaded again by the program.
+- A signal not named holds no more memory. Each list and dynamic view mounted, and each scope,
+  costs a few allocations more as a screen opens, their path and the maps' growth, whether or not
+  a signal is named: 7 to 12 on the bench's screens, and 1 over a whole scroll.
+
+Not measured: the compiler's part of a reload; the owner's laptop; a reload on the web and on
+Android, which M6d.1c3 weighs.
