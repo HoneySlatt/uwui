@@ -195,7 +195,8 @@ of power.
   cells that any thread writes and an element reads as it is drawn
   ([ADR-0205](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0205-signals-change-uwuis-interface.md),
   chosen from [the four models measured](measurements.md#three-models-beside-the-control-on-m6d1bs-bench-2026-11-07)):
-  a list fed by its changes by key, and a timer at the granularity that it shows.
+  a list fed by its changes by key, signals fed by a state outside uwui in batches, and a timer
+  at the granularity that it shows.
 - A library of components in layers, as gpui-kit's: behaviour and state in uwui, the look in
   themes, one dependency for an application; chosen from the needs of the first stage's programs,
   tables among them; every component held to the same bar.

@@ -730,8 +730,8 @@ The prototypes are on the branch
 thrown away once M6d.1b ends. The bench measures as
 [the control's section](#how-the-bench-measures) says, with the additions below. From them, and
 from what Opium, Pluto and the DAW ask of uwui, the owner chose signals, with live values
-([ADR-0205](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0205-signals-change-uwuis-interface.md)). Slatty's list, once
-written, checks the choice ([ADR-0206](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0206-slatty-ported-again-the-daw-later.md)).
+([ADR-0205](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0205-signals-change-uwuis-interface.md)). Slatty's list, written
+after, checked the choice: no need of its left uncovered ([ADR-0206](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0206-slatty-ported-again-the-daw-later.md)).
 
 - Machine: AMD Ryzen 7 5800X, 32 GB, Linux 7.3; the bench pinned to one core, the machine at
   rest.
