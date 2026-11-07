@@ -10,8 +10,8 @@ Update this file when a stage is reshaped, a budget changes, or an open decision
 
 ## 1. What uwui is
 
-A UI framework in Rust, GPU-rendered, for the desktop, Android phones and the web, under MIT OR
-Apache-2.0
+A UI framework in Rust, GPU-rendered, for the desktop, Linux, Windows and macOS, Android phones
+and the web, under MIT OR Apache-2.0
 ([ADR-0181](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0181-uwuis-scope.md),
 [ADR-0190](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0190-uwuis-requirements.md)).
 
@@ -21,8 +21,13 @@ Apache-2.0
 - Embedded in a host that calls it: its core never owns the event loop, and runs without a window
   or a GPU.
 - The same look on every platform, from themes in files; the behaviours that each platform's users
-  expect.
-- Read and driven by agents, through a channel and an MCP server of its own.
+  expect. Its core ships one sober look, a start; Glass, Material 3 Expressive and Pro are official
+  themes, each a crate of its own; nothing is chosen in silence ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md), [ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)).
+- An application ports with no line written for one platform ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
+- Read and driven by agents, through one core for agents and its MCP server; a user's own agents
+  use a finished application through the actions that it declares once ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md), [ADR-0218](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0218-one-core-for-agents-in-uwui.md)).
+- Paid for by its patrons, through GitHub Sponsors or Open Collective, from its 1.0; no other paid
+  offer ([ADR-0214](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0214-the-engine-under-a-licence-of-its-own-with-a-royalty.md)).
 - Public and adopted widely at its 1.0, judged as a whole against GPUI with gpui-kit, Flutter and
   Jetpack Compose, SwiftUI, Electron and Tauri, Qt and Slint.
 
@@ -38,6 +43,12 @@ Apache-2.0
   gpui-kit, and better on what they lack: a change of the look or of the layout seen without
   compiling again, the start, memory, power at rest and in motion, Android and the web, agents.
   Judged on whole programs, and on screens of reference chosen before the work and never tuned for.
+- Porting: more easily than with Electron or GPUI, to Linux, Windows, macOS and the web, then iOS
+  and Android as far as phones allow ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
+- Agents: they succeed with uwui at least as often as with the best rival, on fewer tokens
+  ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
+- Measured as SlimeEngine is: the light sensor, blind tests by people, compiling's budgets and
+  hours without a crash ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)).
 
 ### Screens of reference
 
@@ -62,12 +73,20 @@ beside their figures, and change with their versions: each figure names its vers
 The rivals were narrowed on 2026-11-06 to those that aim at what uwui aims at
 ([ADR-0201](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0201-the-rivals-narrowed.md)).
 
+A fifth screen, rich in effects, comes in the first stage beside uwui's first material of glass:
+glass over moving content, a background blurred, shapes that morph, a transition on springs from
+one screen to the next. The owner chooses it before any work on it; the proposal is Opium's screen of
+the song playing, in its Glass theme. Its rivals are those that can draw it: Flutter, Compose,
+Electron, and SwiftUI with Apple's glass on macOS; beside it, a table of what each rival can draw.
+Before 1.0, a *gallery*: mock-ups of the market chosen with the owner, which uwui reproduces, each
+judged image against mock-up, with its frame's cost ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
+
 #### The bar of each screen
 
 The best rival on each criterion, measured on 2026-11-06, from
 [`measurements.md`](measurements.md); memory is the proportional size of all a program's
-processes, then its video memory. A program on uwui beats a screen's bar when it beats each line;
-the floor, the owner's program, is in `measurements.md` beside it.
+processes, then its video memory. A program on uwui must beat each line, at the least; the floor,
+the owner's program, is in `measurements.md` beside it. Its lead is a budget of its own, below.
 
 "Hello, World!":
 
@@ -140,7 +159,13 @@ A budget missed is debt until it is met. No application runs on uwui yet: none i
 | Start | a typical application on the high tier, warm, to its first useful frame, 100 ms; cold, 500 ms ([ADR-0190](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0190-uwuis-requirements.md), [ADR-0192](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0192-the-budget-of-a-cold-start.md)) | the log's times, and the launch timed by `hyperfine` |
 | Size and changes | a typical application on the high tier: at most 100 MB resident at rest, a binary of at most 20 MB, a change of its interface seen within 2 s ([ADR-0190](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0190-uwuis-requirements.md)) | the four programs of the first stage, and the application measured against the rivals |
 | The package for the web | at most 1 MB of WebAssembly compressed with brotli, fonts apart; provisional until the web's trial ([ADR-0181](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0181-uwuis-scope.md)) | the web's trial |
-| Power | each effect at rest and in motion, the GPU's and the CPU's, on the owner's machine and on a modest one ([ADR-0171](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0171-effects-of-the-interface.md)) | decided with the effects |
+| Power | each effect at rest and in motion, the GPU's and the CPU's, on the owner's machine and on a modest one ([ADR-0171](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0171-effects-of-the-interface.md)); its figure from the lead, below | decided with the effects |
+| The lead | on each machine and screen, a program's *own cost*, what it adds above a *blank window* that only clears and presents, is at most a third of the best rival's: memory, the start, the processor, power, a frame's time and the package's size; at rest and from input to present, the blank window's figure ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)) | the blank window measured beside each screen, from SlimeEngine's M6d.7 |
+| Porting | an application on uwui's APIs alone runs on Linux, Windows, macOS and the web with no line written for one platform; on Android and iOS, only its package's configuration and permissions differ; provisional until the trials of Android, the web and iOS ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)) | the small application of 1.0 on each platform: its lines for that platform, the steps from `uwui new` to a package installed, the package's size, against Electron, Tauri, Flutter, GPUI and Compose Multiplatform |
+| Input to photon | timed by a light sensor on the screen, so that the rivals compare from outside ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)) | the light sensor's bench, from SlimeEngine's Stage 6e |
+| Compiling | SlimeEngine's budgets of compiling, applied to an application on uwui; their figures for an application weighed at SlimeEngine's M6d.10 ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md), [ADR-0220](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0220-the-roadmap-reshaped-by-the-market.md)) | at each milestone, on the high tier |
+| Hours without a crash | at least 99.9 % of an application's hours of use without a crash, no work lost after one ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)) | the hours and crashes counted on the machine |
+| Agents | an *agent bench*: a screen from a mock-up, a feature added, a bug fixed, a port to the web, given to the same agents in the same words with uwui and with GPUI and gpui-kit, Flutter, Compose, Electron, Tauri and Slint; at least the best rival's success, on fewer tokens; provisional ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)) | success, tries, tokens and time, with the models, their versions and the date, at each release |
 
 The interface's GPU time and a list's frame, which SlimeEngine's editor shares, stay in
 [SlimeEngine's quality bar](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/ROADMAP.md#4-quality-bar)
@@ -156,10 +181,23 @@ until its milestone M6d.10 decides their home.
   Xvfb, and on Windows by hand
   ([ADR-0195](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0195-a-series-of-headless-compositors.md)).
 - Variable refresh rates, checked by hand: no headless compositor emulates them.
-- macOS built and tested in CI, and checked by hand on macOS 26, Intel with an AMD GPU; supported
-  once a Mac with Apple's chips checks it
+- macOS aimed at for 1.0, as Linux and Windows: built and tested in CI, checked by hand in a virtual
+  machine, macOS 26 on Intel with an AMD GPU, and on a Mac with Apple's chips when one is at hand;
+  the documentation names the last check on Apple's chips and its date, or says that none was made
   ([ADR-0173](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0173-the-platforms-of-applications.md),
-  [ADR-0196](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0196-checks-by-hand-on-macos.md)).
+  [ADR-0196](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0196-checks-by-hand-on-macos.md),
+  [ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
+- iOS out of 1.0's targets: a trial on Xcode's simulator; frame times, power, touch and VoiceOver on
+  an iPhone are debt until one is at hand ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
+- Blind tests by people: an application's captures compared with its rivals' without knowing which
+  is which ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)).
+- No look imposed: `uwui new` asks which look, uwui's own, Glass, Material 3 Expressive, Pro or
+  blank; a test of signature checks that applications on uwui are not recognised by their look
+  ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)).
+- The official themes' images of reference run in uwui's CI: a change that breaks one is refused
+  ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
+- A user's agents: consent agent by agent, each action through the interface's own commands, undone
+  and logged, no secret given ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
 - Content from outside read within limits of size, memory and time, fuzzed, and never crashing.
 - No telemetry: uwui sends nothing over the network of its own accord.
 
@@ -177,8 +215,8 @@ until its milestone M6d.10 decides their home.
 ### Now: uwui leaves SlimeEngine
 
 SlimeEngine's Stage 6d: the figures before, how an application is written decided, uwui
-decoupled from the engine, its desktop host on a series of compositors, its channel for agents,
-then its code moved here
+decoupled from the engine, its desktop host on a series of compositors, one core for agents and
+its MCP server, the actions declared once, then its code moved here
 ([SlimeEngine's plan](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/PLAN.md)).
 
 ### The first stage: the foundations and four programs
@@ -208,20 +246,27 @@ of power.
 - A library of components in layers, as gpui-kit's: behaviour and state in uwui, the look in
   themes, one dependency for an application; chosen from the needs of the first stage's programs,
   tables among them; every component held to the same bar.
+- The core's own look, light, dark and of high contrast, in three densities; the official themes
+  Glass, Material 3 Expressive and Pro, each a crate of its own in this repository with its own
+  version, which the core never depends on ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
+- What differs between platforms and an application needs, in uwui: files and settings, the network,
+  long work ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
 - The platforms' behaviours, the same look everywhere: a scroll's physics, predictive back, a
   selection's handles and the long press, haptics, the conventions of shortcuts; one model of
   focus for the keyboard, accessibility and gamepads.
 - Fonts given as bytes and loaded when a text first needs them, with a fallback for each writing
   system, for Android and the web.
-- Two bounded trials, thrown away, before the API is declared stable: Android, in a Kotlin
-  activity, and the web, in a canvas, each with its report.
+- Three bounded trials, thrown away, before the API is declared stable, each with its report:
+  Android, in a Kotlin activity; the web, in a canvas; then iOS, in two milestones, in a UIKit view
+  on Xcode's simulator: the surface lost and made again, rotation, the system's keyboard with
+  composition, iOS's scrolling, suspend and resume, a first try of VoiceOver ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
 - Images read from files and the network, decoded away from the interface's thread, in a cache
   bounded by memory that frees the GPU's; cropped to cover, cross-faded, textures updated at each
   frame.
 - Drawing: groups drawn apart into images of their own, kept while they do not change; what lies
   behind an element blurred, bent, tinted and lit, for glass; transforms, several shadows,
   gradients of several stops and radial ones, dithered; vector shapes that morph; a first material
-  of glass.
+  of glass, and the fifth screen of reference.
 - Motion: transforms animated, curves and springs, delays in cascade, animations driven by
   scrolling and by gestures, interrupted without a jump, an element that becomes another, variable
   fonts whose axes move; a rate capped for each animation, effects stopped while the window has
@@ -261,13 +306,23 @@ each effect, at rest and in motion.
   each package; packages for Linux, Windows, Android and the web; updates installed by an
   application evaluated, at most an optional crate for Windows and macOS ([ADR-0199](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0199-uwuis-targets-tools-and-references-narrowed.md)); a book, a site whose demonstrations run in the browser, and small
   applications finished.
+- macOS's host and integrations, the menu bar, Cmd as the primary modifier, notifications, Now
+  Playing and the Dock; `uwui bundle` makes an application bundle and a disk image, signed and
+  notarized, under an Apple developer account ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
 - WCAG 2.2 at level AA, checked; the same small application, whole, written with each rival and
-  with uwui, measured on the owner's machines.
+  with uwui, measured on the owner's machines, built and run on Linux, Windows, macOS, the web,
+  Android and iOS's simulator; CI building uwui's examples for every target at each push
+  ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
+- The gallery of the market's mock-ups.
+- The agent bench at each release; documentation written for agents, a compact reference and a
+  skill, and an `AGENTS.md` written by `uwui new`.
+- A local MCP server through which the user's assistant calls an application's actions on the
+  desktop; each system's adapter when a pilot needs it and the system offers it ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
 
 **Exit.** uwui 1.0, announced and published on crates.io with a site, outside contributions
 opened: every requirement of ADR-0190 met or recorded as debt; the application measured against
 the rivals better than each as a whole, on lines, start, memory, frames and power; semantic
-versioning kept from then on.
+versioning kept from then on; patronage opened.
 
 The cut and the order of these stages are designed in SlimeEngine's milestone M6d.10, with the
 owner.
