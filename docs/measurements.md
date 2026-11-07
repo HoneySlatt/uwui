@@ -2054,3 +2054,91 @@ moved. Without it, the 10,000 messages cost some 10,000 allocations more.
 
 Not measured: the owner's laptop; a real window's wake; tokio's channels, which the bench does
 not depend on; a timer's frame against a real display's.
+
+## A function's body reloaded through subsecond (2026-11-07)
+
+Rust's code reloaded while the program runs, its state kept, on the bench of SlimeEngine's
+milestone M6d.1c3a
+([ADR-0212](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0212-a-functions-body-reloaded-through-subsecond-and-dx.md)).
+The bench runs under `dx serve --hot-patch` and plays Slatty's library to a game's page: its grid
+scrolled, a filter typed, the selection moved. Then, at each run, it changes its search field's
+placeholder in the view's source file and saves it, as an editor writes a file and renames it.
+`dx` compiles the change, links it against the running program's addresses and sends the new
+table of the functions' addresses over its websocket. A thread of the bench receives it and wakes
+the host, which applies it between two frames and runs the view again through `subsecond`'s
+table. Each kept signal takes its value back by its name
+([as on M6d.1c1's bench](#signals-named-across-a-reload-2026-11-07)).
+
+The prototype goes on from M6d.1c2's, on the branch
+[`m6d1c-bench`](https://github.com/HoneySlatt/SlimeEngine/tree/m6d1c-bench/benches/src/prototypes),
+thrown away once M6d.1 ends.
+
+- Machine: AMD Ryzen 7 5800X, 32 GB, Linux 7.3; at rest, but for other sessions' light work, a
+  load average of 1.0 to 1.6.
+- Build: `dx`'s profile `desktop-dev`, which inherits `dev`: without optimisation and with debug
+  assertions, which `subsecond` needs. SlimeEngine's branch `m6d1c-bench` at `52bdb71`; the
+  review's changes after it, at `8f19ef0`, touch no timed path. rustc 1.99.0, `dx` and
+  `subsecond` 0.7.10. Not pinned to a core: the compiler and the linker use all of them, as on an author's
+  machine.
+- Command, inside SlimeEngine's `nix develop`: `dx serve --hot-patch --interactive false -p
+  slime-benches --features hot --args="--prototypes --hot --runs 21"`;
+  `CARGO_PROFILE_DEV_DEBUG=line-tables-only` for line tables alone; `SLIME_HOT_SCREENS=0` for the
+  bench's own size.
+- Size: Slatty's interface, its crate `gui`, holds 21,140 lines of code, counted by
+  [`scripts/count_code.py`](../scripts/count_code.py) on its files as they are. The bench's crate
+  holds 12,988; its `build.rs` adds 146 views of the library's shape, 8,177 lines once formatted,
+  for 21,165. Its program links SlimeEngine's crates, from its `crates/` and `games/`, 126,477
+  lines; Slatty's links its other crates, 57,477 lines, and Iced.
+- Each time: the median of 21 runs, with their range, in milliseconds; a session's first patch
+  apart. Each run checks that its frame shows the new placeholder with the scroll, the selection,
+  the field's text, the filter and the page kept, and that the reload noted nothing: all 21 did,
+  in each series.
+
+### From a change saved to the frame that shows it
+
+| The crate that changed | Debug information | Whole | The patch arrived | `dx`'s own count | Applied | The reload's call | Its frame | A session's first |
+|---|---|---|---|---|---|---|---|---|
+| Slatty's size, 21,165 lines | full, the `dev` profile's | 2,041 (1,900–2,457) | 2,022 (1,881–2,436) | 1,233 (1,153–1,444) | 7.9 (7.7–10.0) | 1.1 (1.1–1.3) | 4.8 (4.7–5.8) | 1,987 |
+| Slatty's size, 21,165 lines | line tables alone | 1,684 (1,636–2,379) | 1,666 (1,617–2,360) | 1,126 (1,098–1,523) | 8.2 (7.5–11.6) | 1.1 (1.0–1.4) | 4.6 (4.4–5.3) | 1,644 |
+| The bench's own, 12,988 lines | full | 1,149 (1,112–2,079) | 1,137 (1,100–2,067) | 670 (650–1,096) | 3.4 (3.1–3.8) | 1.0 (1.0–1.2) | 4.8 (4.6–5.5) | 1,296 |
+
+- *Whole*: from the save, once the file is renamed, to the end of the frame's display list.
+- *The patch arrived*: from the save to the patch read on the bench's thread. `dx` heard of the
+  change some 2 ms after the save, in every series.
+- *`dx`'s own count*: the time that `dx` gives in its message, that of its cargo build of the
+  changed crate. The rest of the patch's arrival, some 0.8 s at Slatty's size and 0.5 s at the
+  bench's, comes after that build: the patch linked, and its table made from both binaries.
+- *Applied*: `subsecond::apply_patch`, the patch's library loaded and its table installed.
+- *The reload's call* and *its frame*: as on M6d.1c1's bench, here without optimisation.
+- The parts leave out 2 to 5 ms of each whole: the patch handed from the bench's thread, where it
+  arrives, to the host, which it wakes.
+
+The same change, built again by cargo without a reload, at Slatty's size with full debug
+information: 2,181 ms (2,157–2,389), by `benches/hot-rebuild.sh`. A first series overlapped
+another build running on the machine, 3,238 ms; it was run again once that ended.
+
+### What they say
+
+- A body changed shows within the budget of a change seen, 2 s, at Slatty's size with line
+  tables alone: 1.68 s. With full debug information, it misses it by 0.04 s. `uwui dev` compiles
+  with line tables, in a folder of its own: cargo's builds keep full debug information.
+- Nearly all the time is `dx`'s: its cargo build of the changed crate, some 1.2 s at Slatty's
+  size, then the patch's link and its table, some 0.8 s. The program's own part, the patch
+  applied, the view run again and its frame, is some 14 ms without optimisation, and a few more to
+  hand the patch to the host.
+- `dx` links the whole crate that changed into the patch: its build and its link both grow with
+  that crate's size, 1.15 s at 13,000 lines, 2.04 s at 21,200. An interface cut into smaller
+  crates reloads faster.
+- The reload saves little of the compiler's time over cargo's own build, 2.04 s against 2.18 s. It
+  saves the program's start, its data loaded again, and the state found again by hand.
+- The state is kept by the signals' names across every run.
+- On Linux, a thread-local defined in the crate that a patch links does not link at all, and one
+  reached by code compiled there, a generic function or one inlined, becomes the patch's own empty
+  copy. The bench's thread-locals moved to a crate of their own, reached through functions neither
+  generic nor inlined; uwui's will follow the same rule. This costs the bench's signals a call out
+  of line, and each lookup of the runtime a downcast: M6d.1c1's and M6d.1c2's figures on this
+  branch were taken before it.
+
+Not measured: the web and Android, which have no host yet, weighed in the ADR from
+[the survey](survey-writing-an-application.md#8-reloads-on-the-web-and-on-android); Windows and
+macOS; a window's frame; the owner's laptop; the rivals' reloads, SlimeEngine's M6d.1c3b.
