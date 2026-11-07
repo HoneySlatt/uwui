@@ -11,7 +11,8 @@ Its figures are printed and written, with every run's raw data, to <folder>/resu
 - Start, `--runs` times (10) after one not counted: from the launch to the first frame of the
   application that the compositor shows, and to the first frame from which nothing changes until
   the application stays still ("still", below), each compared by its pixels' CRC-32; a start
-  that is not still within `--still-limit` seconds (60) has no "still".
+  that is not still within `--still-limit` seconds (60) has no "still". `--no-warm-up` leaves out
+  the start not counted, for a program whose tool builds it at its start, a reload's.
 - Then, after one more start, the steps of `--steps <file>`, or by default: wait until still,
   3 s, the memory, 7 s, then 60 s at rest.
 - `--xwayland`: once more, the program started with Xwayland's display alone, its rest for 60 s.
@@ -29,11 +30,38 @@ A step a line, `#` a comment:
     origin <command>      runs the shell command, which prints the window's box as
                           <width>x<height>+<x>+<y>, the window's origin in the layout (0, 0 at first)
     sleep <seconds>
-    still                 waits until no frame comes for 1.5 s and the program's processes work no
-                          more (at most two ticks in a second), at most 60 s
+    still [<seconds>]     waits until no frame comes for 1.5 s and the program's processes work no
+                          more (at most two ticks in a second), at most <seconds> (60)
     shot <name>           an image of the output, a third of its size, <folder>/<name>.png (grim)
     memory <label>        resident (RSS, and PSS summed over the process's tree) and video memory
     measure <label> <seconds> [every <milliseconds> <pointer command>]
+    save <label> <runs> <file> <text> <replacement> [--region <x>,<y>,<width>,<height>]
+         [--in-place] [--then <command>] [--then-limit <seconds>] [--pause <seconds>]
+         [--limit <seconds>]
+                          a change saved and the first frame that shows it, below
+
+`save` times a reload: it saves <file> with <text> replaced by <replacement>, as an editor saves,
+written beside it and renamed over it, and waits for the first frame whose pixels differ from those
+shown before the save, compared by their CRC-32. The time runs from just before the file changes on
+disk. It saves <runs> + 1 times, the change and back in turn, the first apart (a session's first
+reload, often slower), each once the program stood still, as `still` waits, at most `--limit`
+seconds (60), and waits for the change at most as long.
+
+- `--region`: only <region>'s pixels are compared, in logical pixels from the window's origin, so
+  that a notice of the reload drawn elsewhere is not taken for the change; refused on `--display`.
+- `--in-place`: the file written over itself instead, as some editors save, for a watcher that
+  takes no file renamed.
+- `--then`: a shell command run after each save, as an editor's action on save (Flutter reloads on
+  a signal); failed past `--then-limit` seconds (10) or with a status not zero.
+- `--pause`: that many seconds waited instead of the program standing still, for a program that
+  draws or works without end.
+
+Each run notes the first frame changed and the image the program settled on: a frame between them,
+a blank one or a notice that goes, is counted apart. It notes whether the program kept its window
+and its process, as sway lists them. Every save step's file and text are checked before the program
+starts, and the file is saved back as it was, the way the step saved it, when the step ends or
+stops. The step is parsed as a shell parses words, so that <text> may hold spaces; `#` still
+begins a comment.
 
 `measure` reads over its seconds, while the pointer command repeats if one is given: the frames
 the compositor shows and the intervals between them, their median, 95th and 99th percentiles and
@@ -62,6 +90,7 @@ import json
 import os
 import platform
 import re
+import shlex
 import shutil
 import signal
 import socket
@@ -223,10 +252,13 @@ class Helper:
 
 
 class Frames(Helper):
-    """The frames that the compositor shows, read in a thread: (time in ns, CRC-32 or None)."""
+    """The frames that the compositor shows, read in a thread: (time in ns, CRC-32 or None). With
+    `pixels`, a CRC of `region` (the output's logical pixels, "<x>,<y>,<width>,<height>"), the whole
+    output by default; without, a copy of one pixel, which only tells that a frame came."""
 
-    def __init__(self, session, pixels):
-        arguments = ["frames"] + (["--pixels"] if pixels else ["--region", "0,0,1,1"])
+    def __init__(self, session, pixels, region=None):
+        arguments = ["frames"] + (["--pixels"] + (["--region", region] if region else []) if pixels
+                                  else ["--region", "0,0,1,1"])
         if getattr(session, "at", None):
             arguments += ["--at", session.at]
         super().__init__(session, *arguments)
@@ -431,6 +463,131 @@ def frame_figures(stamps, start, end):
     return figures
 
 
+def first_change(frames, after, baseline):
+    """The first frame shown after the time `after` whose CRC is not `baseline`: (time, CRC) or None."""
+    return next(((stamp, crc) for stamp, crc in frames if stamp > after and crc != baseline), None)
+
+
+def replace_once(content, text, replacement):
+    """`content` with its one `text` replaced; refuses a text absent or there more than once, which
+    would make the step change something other than it says."""
+    count = content.count(text)
+    if count != 1:
+        raise ValueError(f"{text!r} is in the file {count} times, not once")
+    return content.replace(text, replacement)
+
+
+def read_text(path):
+    """The file's text as it is on disk, its line endings kept."""
+    with open(path, encoding="utf-8", newline="") as file:
+        return file.read()
+
+
+def save_as_an_editor(path, content):
+    """Writes `content` to a file beside `path`, then renames it over `path`, as editors save: the
+    file is whole at every instant, and a watcher sees it created or moved, not written in parts.
+    The file keeps its mode and its line endings. Returns the time, in ns, just before the rename,
+    when a watcher may first see the change."""
+    folder, name = os.path.split(os.path.abspath(path))
+    mode = os.stat(path).st_mode & 0o7777
+    descriptor, temporary = tempfile.mkstemp(prefix=f".{name}.", dir=folder)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="") as file:
+            file.write(content)
+            file.flush()
+            os.fsync(file.fileno())
+        os.chmod(temporary, mode)
+        saved = now_ns()
+        os.replace(temporary, path)
+        return saved
+    except BaseException:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+        raise
+
+
+def save_in_place(path, content):
+    """Writes `content` over the file at `path`, the same file: a watcher sees its data modified.
+    Returns the time, in ns, just before the write, when a watcher may first see the change."""
+    with open(path, "r+", encoding="utf-8", newline="") as file:
+        saved = now_ns()
+        file.write(content)
+        file.truncate()
+        file.flush()
+        os.fsync(file.fileno())
+    return saved
+
+
+def restore(path, original, in_place):
+    """Saves the file back to `original` if it differs, the way the step saved it, so that a watcher
+    that takes only one way sees it too."""
+    if read_text(path) != original:
+        (save_in_place if in_place else save_as_an_editor)(path, original)
+
+
+def region_in_layout(region, origin):
+    """A step's region, "<x>,<y>,<width>,<height>" from the window's origin, moved to the output's
+    logical pixels."""
+    x, y, width, height = (int(part) for part in region.split(","))
+    return f"{x + origin[0]},{y + origin[1]},{width},{height}"
+
+
+SAVE = argparse.ArgumentParser(prog="save", add_help=False, exit_on_error=False)
+SAVE.add_argument("label")
+SAVE.add_argument("runs", type=int)
+SAVE.add_argument("file")
+SAVE.add_argument("text")
+SAVE.add_argument("replacement")
+SAVE.add_argument("--region")
+SAVE.add_argument("--in-place", action="store_true")
+SAVE.add_argument("--then")
+SAVE.add_argument("--then-limit", type=float, default=10)
+SAVE.add_argument("--pause", type=float)
+SAVE.add_argument("--limit", type=float, default=60)
+
+
+def save_step(line):
+    """The words of a `save` step, as a shell splits them, read into its arguments."""
+    try:
+        arguments = SAVE.parse_args(shlex.split(line)[1:])
+    except (argparse.ArgumentError, ValueError) as error:
+        sys.exit(f"a save step not understood: {line}: {error}")
+    if arguments.region and not re.fullmatch(r"\d+,\d+,\d+,\d+", arguments.region):
+        sys.exit(f"a region is <x>,<y>,<width>,<height>: {line}")
+    if arguments.runs < 1 or arguments.text == arguments.replacement:
+        sys.exit(f"a save step needs a run at least, and a replacement that differs: {line}")
+    if (arguments.pause is not None and arguments.pause < 0) or arguments.limit <= 0:
+        sys.exit(f"a pause is not negative, and a limit is positive: {line}")
+    return arguments
+
+
+def check_save_steps(steps):
+    """Every `save` step read and its file checked before the program starts: its text there once.
+    A mistake then stops the measure at once, not after the program's tool has built it."""
+    for line in steps:
+        if line.split()[0] == "save":
+            step = save_step(line)
+            try:
+                replace_once(read_text(step.file), step.text, step.replacement)
+            except (OSError, ValueError) as error:
+                sys.exit(f"a save step cannot change its file: {line}: {error}")
+
+
+def views(session):
+    """The windows that sway shows, as (id, pid) pairs; None on a display that is not sway's."""
+    if not hasattr(session, "ipc"):
+        return None
+    found, queue = [], [session.ipc("-t", "get_tree")]
+    while queue:
+        node = queue.pop()
+        if not node:
+            continue
+        if node.get("pid") and node.get("type") in ("con", "floating_con"):
+            found.append((node["id"], node["pid"]))
+        queue.extend(node.get("nodes", []) + node.get("floating_nodes", []))
+    return sorted(found)
+
+
 class Run:
     """The program, started in the session with its display, and what reads it."""
 
@@ -594,8 +751,11 @@ class Program:
         elif words[0] == "sleep":
             time.sleep(float(words[1]))
         elif words[0] == "still":
-            if not self.frames.wait_still(self.pids):
-                print("  still: never, within 60 s", flush=True)
+            limit = float(words[1]) if len(words) > 1 else 60
+            if not self.frames.wait_still(self.pids, limit):
+                print(f"  still: never, within {limit:g} s", flush=True)
+        elif words[0] == "save":
+            self.save(save_step(line))
         elif words[0] == "memory":
             self.results[f"memory {words[1]}"] = memory(self.run.process.pid)
             print(f"  memory {words[1]}: {self.results[f'memory {words[1]}']}", flush=True)
@@ -611,6 +771,76 @@ class Program:
             sys.exit(f"a step not understood: {line}")
         if self.run.process.poll() is not None:
             sys.exit(f"the program ended during the steps, at: {line}")
+
+    def save(self, step):
+        """The `save` step: the change saved and back, each time to its first frame shown."""
+        region = None
+        if step.region:
+            if isinstance(self.session, Display):
+                sys.exit("a save step's region is not read on --display: the output may not start at "
+                         "the layout's origin")
+            region = region_in_layout(step.region, self.origin)
+        original = read_text(step.file)
+        changed = replace_once(original, step.text, step.replacement)
+        save_file = save_in_place if step.in_place else save_as_an_editor
+        frames = Frames(self.session, pixels=True, region=region)
+        runs = []
+        try:
+            frames.wait_first()
+            for number in range(step.runs + 1):
+                if step.pause is not None:
+                    time.sleep(step.pause)
+                elif not frames.wait_still(self.pids, step.limit):
+                    print(f"  {step.label} {number}: not still within {step.limit:g} s before the save", flush=True)
+                time.sleep(0.2)  # the copy of the last frame, which may still be hashed
+                baseline = frames.frames[-1][1]
+                windows = views(self.session)
+                saved = save_file(step.file, changed if number % 2 == 0 else original)
+                then_failed = False
+                if step.then:
+                    try:
+                        then_failed = subprocess.run(step.then, shell=True, check=False,
+                                                     timeout=step.then_limit).returncode != 0
+                    except subprocess.TimeoutExpired:
+                        then_failed = True
+                shown = None
+                deadline = time.monotonic() + step.limit
+                while shown is None and time.monotonic() < deadline:
+                    time.sleep(0.005)
+                    shown = first_change(list(frames.frames), saved, baseline)
+                if step.pause is not None:
+                    time.sleep(step.pause)
+                    settled = None
+                else:
+                    settled = frames.wait_still(self.pids, step.limit)
+                image = frames.frames[-1][1]
+                run = {"saved_ns": saved, "shown_ms": round((shown[0] - saved) / 1e6, 1) if shown else None,
+                       "first_image": shown[1] if shown else None, "settled": settled, "image": image,
+                       "window_kept": None if windows is None else windows == views(self.session)}
+                if then_failed:
+                    run["then_failed"] = True
+                runs.append(run)
+                print(f"  {step.label} {'first' if number == 0 else number}: {run}", flush=True)
+                if self.run.process.poll() is not None:
+                    break
+        finally:
+            frames.stop()
+            restore(step.file, original, step.in_place)
+        counted = runs[1:]
+        # A steady reload settles on two images alone, the change's and the original's, and shows its
+        # change at once: its first frame changed is the image it settles on, not one between.
+        self.results[step.label] = {
+            "file": step.file, "text": step.text, "replacement": step.replacement, "region": region,
+            "in_place": step.in_place, "then": step.then, "first_ms": runs[0]["shown_ms"] if runs else None,
+            "shown_ms": spread([run["shown_ms"] for run in counted]),
+            "not_shown": sum(run["shown_ms"] is None for run in counted),
+            "shown_between": sum(run["first_image"] not in (None, run["image"]) for run in counted),
+            "then_failed": sum(run.get("then_failed", False) for run in counted),
+            "window_kept": all(run["window_kept"] is not False for run in runs),
+            "images": sorted({run["image"] for run in counted}), "runs": runs}
+        result = self.results[step.label]
+        print(f"  {step.label}: {result['shown_ms']}, {result['not_shown']} not shown, "
+              f"{result['shown_between']} first shown as another image, {len(result['images'])} images", flush=True)
 
     def stop(self):
         self.pointer.stop()
@@ -657,6 +887,7 @@ def main():
     parser.add_argument("--power", action="store_true")
     parser.add_argument("--still-limit", type=float, default=60)
     parser.add_argument("--display", action="store_true")
+    parser.add_argument("--no-warm-up", action="store_true")
     parser.add_argument("--at")
     parser.add_argument("folder")
     parser.add_argument("command", nargs=argparse.REMAINDER)
@@ -675,6 +906,9 @@ def main():
         with open(arguments.steps, encoding="utf-8") as file:
             steps = [line.split("#", 1)[0].strip() for line in file]
         steps = [line for line in steps if line]
+    check_save_steps(steps)
+    # SIGTERM ends the measure as Ctrl-C does, through each step's cleanup: a file saved back.
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit("stopped by SIGTERM"))
     os.makedirs(arguments.folder, exist_ok=True)
     folder = os.path.abspath(arguments.folder)
     results = {"command": command, "machine": machine(), "date": time.strftime("%Y-%m-%d"),
@@ -695,8 +929,8 @@ def main():
                 sys.exit("--display measures no start: the output's other windows change its pixels; use --runs 0")
             if not any(line.split()[0] == "origin" for line in steps) and arguments.display:
                 sys.exit("--display needs an `origin` step: the window is not at the layout's origin")
-            print("start, not counted", flush=True)
-            if not arguments.display:
+            if not arguments.display and not arguments.no_warm_up:
+                print("start, not counted", flush=True)
                 start_once(session, command, folder, "start-0", arguments.still_limit)
             runs = []
             for number in range(1, arguments.runs + 1):
