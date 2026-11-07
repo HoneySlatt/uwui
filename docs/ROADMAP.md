@@ -50,7 +50,7 @@ must not fall under; and its rivals, the bar to beat, the best of them criterion
 | Screen | What it is | Rivals |
 |---|---|---|
 | "Hello, World!" | gpui-kit's "Basic Example", word for word, from its README at [`b2aaa3e`](https://github.com/longbridge/gpui-kit/blob/b2aaa3e5f9a387dea74981586bfca33e7e08420d/README.md#basic-example): "Hello, World!" above a primary button, "Let's Go!", that prints "Clicked!" | The same with GPUI and gpui-kit, with GPUI alone, Flutter, Compose for the desktop, Electron, Tauri, Qt Quick, Slint, Iced and egui, each as its own documentation writes it ([`references/hello-world/`](../references/hello-world/README.md)) |
-| Slatty's library | The grid of covers of Slatty, the owner's launcher, no longer developed and rebuilt on uwui as this screen alone ([ADR-0203](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0203-pilots-replaced-pluto-and-a-daw.md)), on the fake profile of 10,000 games that its `slatty-measure` makes; it scrolls 16 logical pixels a frame for 1,200 frames; a game's page opens, its key art fading in | Steam, on the owner's account; Nautilus and gThumb, on the same 10,000 covers |
+| Slatty's library | The grid of covers of Slatty, the owner's launcher, on the fake profile of 10,000 games that its `slatty-measure` makes; it scrolls 16 logical pixels a frame for 1,200 frames; a game's page opens, its key art fading in | Steam, on the owner's account; Nautilus and gThumb, on the same 10,000 covers |
 | Opium's songs | The table of songs of Opium, the owner's music player, in its M3E theme, on a fake library of 8,500 local songs; it scrolls from end to end; a song plays, its wave of progress moving | Spotify and Cider, on the owner's accounts |
 | Zed's file | Zed, scrolling a file of 100,000 lines made by [`scripts/long-file.py`](../scripts/long-file.py) | Zed itself: uwui has no editor of code before its 1.0 |
 
@@ -220,18 +220,17 @@ of power.
 - Text styled by ranges, masked fields, double clicks, the pointer's shapes, smooth and sideways
   scrolling, virtual lists that scroll sideways, a table's header that stays; gamepads.
 - Four programs, outside this repository, before the API is declared stable, each with a
-  checkpoint where the owner uses it: two ported, their figures with their present frameworks
+  checkpoint where the owner uses it: three ported, their figures with their present frameworks
   measured first, the music player on the desktop and its Android prototype, measured against
-  Jetpack Compose; the native client of Pluto, the owner's harness of agents, today on egui; and a
-  digital audio workstation of the class of FL Studio and Pro Tools, which hosts VST3 and CLAP
-  plugins, a new project. The last two each take their bar from their interview and the market
-  when they are designed. Beside them, Slatty's library, rebuilt alone as its screen of reference
+  Jetpack Compose, and the launcher Slatty; and the native client of Pluto, the owner's harness of
+  agents, today on egui, its bar taken from its interview and the market when it is designed. The
+  DAW, Magnolia, comes later, a client of uwui after this stage, its needs checked by the choices
+  meanwhile
   ([ADR-0198](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0198-screens-of-reference-and-the-rivals-measured.md),
-  [ADR-0203](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0203-pilots-replaced-pluto-and-a-daw.md)).
+  [ADR-0206](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0206-slatty-ported-again-the-daw-later.md)).
 
-**Exit.** The two programs ported run on uwui at least as well as on their present frameworks, on
-each of the figures measured first, and so does Slatty's library against Slatty on Iced; Pluto's
-client and the DAW run, each at the bar set when it was designed; uwui's API is declared stable,
+**Exit.** The three programs ported run on uwui at least as well as on their present frameworks,
+on each of the figures measured first; Pluto's client runs at the bar set when it was designed; uwui's API is declared stable,
 after the trials' reports; writing an application beats GPUI with gpui-kit across the whole
 framework, every component and every program ported; every need that the music player marks as
 indispensable exists, shown by an example and its tests; nothing is drawn at rest, under Wayland,
