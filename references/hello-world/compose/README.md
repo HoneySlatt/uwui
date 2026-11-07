@@ -64,3 +64,19 @@ From the system it loads libGL (Skiko links it; `shell.nix` puts libglvnd on `LD
 and the Mesa driver, X11 and its extensions, GTK 3 (which AWT loads), fontconfig, FreeType and
 HarfBuzz; the runtime's own libraries reach the last ones through nixpkgs' JDK. The window is an
 X11 window: it runs through Xwayland, not natively on Wayland.
+
+## Reload
+
+`reload.sh <out>` prepares the hot reload that `scripts/reloads.sh` times, as Compose Hot Reload's
+README runs it from the command line (<https://github.com/JetBrains/compose-hot-reload>, read on
+2026-11-07). Compose Multiplatform bundles its Gradle plugin since 1.10.0: the project is
+unchanged. `<out>/reload` runs `./gradlew :desktopApp:hotRun --auto`, in which Gradle builds
+continuously and the app reloads each change that it compiles, with two properties:
+
+- `compose.reload.jbr.binary`, the JetBrains Runtime from nixpkgs, which `shell.nix` names in
+  `COMPOSE_RELOAD_JBR`: Compose Hot Reload runs the app on it, for its redefinition of classes;
+- `compose.reload.devToolsHeadless`, so that its tools' window, which sway would float over the
+  app's text and which draws without end, runs without a window.
+
+`reload.sh` starts the hot run once without a display, so that Gradle fetches all that it needs
+before the measure, which runs offline. `<out>/stop` stops the Gradle daemons that the run leaves.

@@ -207,6 +207,10 @@ A reload is three questions, answered apart
 
 ### A function's body
 
+The reloads of Dioxus, Iced, GPUI, Slint, Flutter and Compose were timed on their "Hello, World!",
+from a change saved to the frame that shows it, and Makepad's tried:
+[`measurements.md`](measurements.md#the-rivals-reloads-2026-11-07).
+
 - **`subsecond`**, Dioxus 0.7.10
   ([docs.rs](https://docs.rs/subsecond/0.7.10/subsecond/)): calls made through `subsecond::call`
   go through a table of the latest functions' addresses. A tool outside the program, `dx`, compiles

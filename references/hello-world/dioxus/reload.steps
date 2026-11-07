@@ -1,0 +1,9 @@
+# The reloads of Dioxus, timed by scripts/reloads.sh in the copy that reload.sh made. The region
+# holds the text and the button, centred in the window, and leaves out the notices that `dx`
+# shows at the top right of the window once a reload is done.
+still 600
+shot before
+save rsx 21 src/main.rs '"Let'"'"'s Go!"' '"Let'"'"'s Run!"' --region 1030,680,500,130 --limit 120
+save body 21 src/main.rs '"Hello, World!"' '"Hello, Reload!"' --region 1030,680,500,130 --limit 120
+shot after
+memory after

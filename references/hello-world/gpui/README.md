@@ -69,3 +69,11 @@ nix develop <uwui>#hello-gpui --command references/hello-world/gpui/build.sh <ou
 - It needs from the system: libxcb, libxkbcommon, libxkbcommon-x11, freetype and their own
   dependencies (linked); wayland-client, wayland-egl, libEGL and the Vulkan loader with a Vulkan
   driver (opened at run time); the system's fonts.
+
+## Reload
+
+`reload.sh <out>` prepares the reload that `scripts/reloads.sh` times, as the pull request that
+added it to GPUI runs it (<https://github.com/zed-industries/zed/pull/65738>, read on 2026-11-07):
+the feature `gpui/hot-reload` of the same commit, in a debug build served by
+`dx serve --platform linux --hot-patch`. `dx` 0.7.10 comes from uwui's nixpkgs, in this folder's
+shell. The view's `render` is patched through `subsecond`.

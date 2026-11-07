@@ -2105,9 +2105,11 @@ thrown away once M6d.1 ends.
 - *Whole*: from the save, once the file is renamed, to the end of the frame's display list.
 - *The patch arrived*: from the save to the patch read on the bench's thread. `dx` heard of the
   change some 2 ms after the save, in every series.
-- *`dx`'s own count*: the time that `dx` gives in its message, that of its cargo build of the
-  changed crate. The rest of the patch's arrival, some 0.8 s at Slatty's size and 0.5 s at the
-  bench's, comes after that build: the patch linked, and its table made from both binaries.
+- *`dx`'s own count*: the time that `dx` gives in its message, from the start of its build of the
+  patch to the patch built (`serve/runner.rs` of dioxus-cli 0.7.10). The rest of the patch's
+  arrival, some 0.8 s at Slatty's size and 0.5 s at the bench's, comes after that count; the
+  table that maps the patch's functions onto the running program's, which `dx` makes from both
+  binaries, is part of it, not timed apart.
 - *Applied*: `subsecond::apply_patch`, the patch's library loaded and its table installed.
 - *The reload's call* and *its frame*: as on M6d.1c1's bench, here without optimisation.
 - The parts leave out 2 to 5 ms of each whole: the patch handed from the bench's thread, where it
@@ -2122,12 +2124,12 @@ another build running on the machine, 3,238 ms; it was run again once that ended
 - A body changed shows within the budget of a change seen, 2 s, at Slatty's size with line
   tables alone: 1.68 s. With full debug information, it misses it by 0.04 s. `uwui dev` compiles
   with line tables, in a folder of its own: cargo's builds keep full debug information.
-- Nearly all the time is `dx`'s: its cargo build of the changed crate, some 1.2 s at Slatty's
-  size, then the patch's link and its table, some 0.8 s. The program's own part, the patch
+- Nearly all the time is `dx`'s: the patch built, some 1.2 s at Slatty's size, then some 0.8 s
+  after its count, the patch's table among it. The program's own part, the patch
   applied, the view run again and its frame, is some 14 ms without optimisation, and a few more to
   hand the patch to the host.
-- `dx` links the whole crate that changed into the patch: its build and its link both grow with
-  that crate's size, 1.15 s at 13,000 lines, 2.04 s at 21,200. An interface cut into smaller
+- `dx` links the whole crate that changed into the patch: its count and what follows it both grow
+  with that crate's size, 1.15 s at 13,000 lines, 2.04 s at 21,200. An interface cut into smaller
   crates reloads faster.
 - The reload saves little of the compiler's time over cargo's own build, 2.04 s against 2.18 s. It
   saves the program's start, its data loaded again, and the state found again by hand.
@@ -2141,4 +2143,100 @@ another build running on the machine, 3,238 ms; it was run again once that ended
 
 Not measured: the web and Android, which have no host yet, weighed in the ADR from
 [the survey](survey-writing-an-application.md#8-reloads-on-the-web-and-on-android); Windows and
-macOS; a window's frame; the owner's laptop; the rivals' reloads, SlimeEngine's M6d.1c3b.
+macOS; a window's frame; the owner's laptop. The rivals' reloads are
+[timed apart](#the-rivals-reloads-2026-11-07).
+
+## The rivals' reloads (2026-11-07)
+
+How fast the rivals show a change of their code, beside
+[uwui's reload through `subsecond`](#a-functions-body-reloaded-through-subsecond-2026-11-07), for
+SlimeEngine's milestone M6d.1c3b. Each runs its own reload as an author runs it, in a debug build,
+on its "Hello, World!" of [`references/hello-world/`](../references/hello-world/README.md): the
+program started by its tool, the text "Hello, World!" changed to "Hello, Reload!" in its source and
+back, 21 times. [`scripts/reloads.sh`](../scripts/reloads.sh) prepares each and plays its
+`reload.steps` through the step `save` of [`scripts/measure.py`](../scripts/measure.py): the file
+saved, then the first frame that the compositor shows whose pixels differ, compared by their
+CRC-32. No probe runs in the programs.
+
+- Machine: AMD Ryzen 7 5800X, 32 GB, Radeon RX 6900 XT on RADV, NVMe, Linux 7.3.1; sway 1.12
+  without a screen, one output of 3840 × 2160 at 240 Hz, scale 1.5, the window alone on it. At
+  rest, Steam's client open without a game; a load average under 1 before the series, each
+  program's build apart from its reloads.
+- Each time: the median of 21 reloads, with their range, in milliseconds, from just before the file
+  changes on disk to the first frame shown changed; a session's first reload apart. Each reload
+  waited for the program to stand still, as `still` waits, but Compose's, which never stands still
+  under its reload: 5 s apart. In every series, all 21 showed their change; each first frame
+  changed was the image that the program settled on, never one between; the program settled on
+  the same two images, the change's and the original's, and kept its process and its window, as
+  sway lists them.
+- Versions: `dx` 0.7.10, rustc 1.98.1, from uwui's nixpkgs; Dioxus 0.7.10; Iced 0.14.0 with
+  `cargo hot` 0.1.1; GPUI at Zed's `145bcfc`; Slint 1.18.1; Flutter 3.47.4 and Dart 3.13.3;
+  Compose Multiplatform 1.12.2 with its Compose Hot Reload 1.2.0, on the JetBrains Runtime
+  25.0.3-b508.4, Gradle 9.5.1; Makepad at `506ec05`. The Rust programs build with the `dev`
+  profile's full debug information.
+- Command, in uwui's repository: `scripts/reloads.sh <work> <figures>`. A first series, before the
+  step noted its first frame's image and stamped the save before the file's sync, gave the same
+  figures within 15 ms, Makepad's absence included.
+
+### From a change saved to the frame that shows it
+
+| Framework | What changed, and how it reloads | Whole | The tool's own count | A session's first | Memory while reloading |
+|---|---|---|---|---|---|
+| Flutter | the widget's `build` method: the Dart VM loads the changed library, on the signal that an editor sends | 154 (147–171) | 112 (109–124), "Reloaded 1 of 754 libraries" | 219 | 948 MB |
+| Dioxus, RSX | a literal of `rsx!`, the button's label: read again, not compiled | 38.6 (37.7–39.4) | | 51 | 822 MB |
+| Dioxus, a function's body | `greeting()`, called from `rsx!`: patched through `subsecond` by `dx` | 648 (641–655) | 604 (598–612) | 958 | the same |
+| GPUI | the view's `render`: patched through `subsecond` by `dx` | 618 (610–625) | 613 (604–620) | 942 | 996 MB |
+| Iced | `view`: patched through `subsecond` by `cargo hot` | 1,303 (1,286–1,323) | 1,190 (1,170–1,210), cargo's | 2,035 | 686 MB |
+| Slint | the `.slint` file: read again by its interpreter, not compiled | 307 (305–314) | | 308 | 134 MB, the program alone |
+| Compose | the composable `App`: compiled by Gradle, its class redefined by the JetBrains Runtime | 460 (432–510) | | 619 | 2,200 MB, Gradle's daemons with the program |
+| Makepad | the `script_mod!` block, under `--hot` | not shown | | not shown | |
+
+- *The tool's own count*: what the tool writes in its log for each reload. `dx`'s log line counts
+  from the start of its build of the patch to the patch's table made (`build/builder.rs` of
+  dioxus-cli 0.7.10); the time in its message to the program, which uwui's bench reads, stops
+  before that table. Flutter's counts its compile, its reload and the widgets built again;
+  `cargo hot`'s, its cargo build of the patch.
+- *Memory*: once the series ends, the proportional size (PSS) of the processes that the command
+  started: the program with its tool, `dx`, `cargo`, Flutter's tool or Gradle, as an author runs
+  them.
+
+### What they show
+
+- Rust reloaded through `dx`, on a crate of a few lines: 0.65 s for Dioxus, 0.62 s for GPUI, nearly
+  all of it inside `dx`'s log count, 44 ms and 5 ms outside it. uwui's bench, under the same `dx`,
+  takes 1.15 s at 13,000 lines with full debug information and 1.68 s at Slatty's size with line
+  tables alone; its time ends at its display list, not at a frame shown, and it ran on rustc
+  1.99.0. `dx`'s message counts 0.67 s and 1.13 s of it; the rest, some 0.5 and 0.6 s, comes after
+  that count. It holds the table made from both binaries, larger for the bench's program, which
+  links SlimeEngine's crates, than for a "Hello, World!"; it was not timed apart.
+- Iced's `cargo hot`, on the same `subsecond`, takes twice as long as `dx` on the same size: its
+  cargo build of the patch alone is 1.19 s.
+- What does not compile Rust is faster: Flutter's VM, 0.15 s; Slint's interpreter, which reads its
+  markup again, 0.31 s; Dioxus's RSX, read again, 0.04 s. Compose compiles Kotlin through Gradle's
+  daemon in 0.46 s. A layout's or a style's reload without compiling, which SlimeEngine's M6d.1d
+  designs, is the change that can come in under 0.1 s.
+- Of the rivals timed, none reloads a Rust function's body faster than `dx` allows: ADR-0212's
+  choice stands. Makepad's own reload of Rust, through its compiler Relax under `makepad run`, was
+  not built.
+- The state: every program kept its process and its window across each reload; none started
+  again. What each keeps inside, its widgets' state and its own, is read in
+  [the survey](survey-writing-an-application.md#a-functions-body), not measured: a "Hello, World!"
+  holds no state to check.
+- How a save must be written: `cargo hot` 0.1.1 and Slint 1.18.1 reload only a file written over
+  itself. A file saved by a rename, as many editors save, is not reloaded, which their steps show
+  once each; their series write the file in place. Under `dx`, only saves by a rename were timed.
+  `flutter run` watches no file: an editor asks it to reload, here by the signal SIGUSR1 that its
+  tool documents.
+- Compose under its reload never rests: it draws some 63 frames a second without end, the same
+  pixels; its processes, Gradle's daemons with the program, use 10 % of a core and wake 4,282
+  times a second.
+- Makepad: here, each change is logged as detected, saved either way, and never shown; no frame
+  changed, drawn on Vulkan as on OpenGL ES, even after the pointer moved over the window, and
+  nothing in its log says why. Its code drops a change without a word when it finds no compiled
+  block for the file, and this reference is a crate outside Makepad's workspace, which may be the
+  cause; Makepad's own examples, inside it, need its repository cloned, and were not tried. Not
+  timed; the cause not found.
+
+Not measured: the rivals on the web, Android and the owner's laptop; their reloads at Slatty's size;
+a change of a type's state, which [the survey](survey-writing-an-application.md#a-type-whose-state-migrates)
+reads.

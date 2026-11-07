@@ -1,0 +1,8 @@
+# The reload of Iced, timed by scripts/reloads.sh in the copy that reload.sh made: the file saved by
+# a rename once, then written in place 21 times (docs/measurements.md, "The rivals' reloads").
+still 600
+shot before
+save renamed 1 src/main.rs '"Hello, World!"' '"Hello, Reload!"' --limit 10
+save body 21 src/main.rs '"Hello, World!"' '"Hello, Reload!"' --in-place --limit 120
+shot after
+memory after

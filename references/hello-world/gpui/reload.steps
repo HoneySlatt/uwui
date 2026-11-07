@@ -1,0 +1,7 @@
+# The reload of GPUI, timed by scripts/reloads.sh in the copy that reload.sh made: the text is a
+# child that the view's `render` gives, a function's body that `dx` patches.
+still 600
+shot before
+save body 21 src/main.rs '"Hello, World!"' '"Hello, Reload!"' --limit 120
+shot after
+memory after

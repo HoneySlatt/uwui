@@ -42,3 +42,12 @@ libgcc_s. At run time it loads the libraries that `shell.nix` puts on `LD_LIBRAR
 headless sway it loaded libwayland-client, libwayland-egl, libEGL, the Vulkan loader with the
 system's Mesa drivers, and libX11 and libxcb (linked by the graphics stack). libxkbcommon was
 not loaded, the headless output having no keyboard; nor was fontconfig.
+
+## Reload
+
+`reload.sh <out>` prepares the reload that `scripts/reloads.sh` times, read on 2026-11-07 in
+Iced's pull request that added it (<https://github.com/iced-rs/iced/pull/3000>): Iced's feature
+`hot` and `cargo hot` 0.1.1, which `reload.sh` installs by cargo into `<out>/tools`. A copy in
+`<out>/project` is built once in debug, and `<out>/reload` runs `cargo hot --features iced/hot`.
+`view` is patched through `subsecond`. How each save is written, and why, is in
+[`docs/measurements.md`](../../../docs/measurements.md#the-rivals-reloads-2026-11-07).

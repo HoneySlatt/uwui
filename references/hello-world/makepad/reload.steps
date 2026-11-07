@@ -1,0 +1,8 @@
+# The reload of Makepad, timed by scripts/reloads.sh in the copy that reload.sh made: the text is
+# in a `script_mod!` block, which `--hot` evaluates again. The file is saved both ways
+# (docs/measurements.md, "The rivals' reloads").
+still 600
+shot before
+save renamed 2 src/main.rs '"Hello, World!"' '"Hello, Reload!"' --limit 30
+save in-place 2 src/main.rs '"Hello, World!"' '"Hello, Reload!"' --in-place --limit 30
+shot after

@@ -206,7 +206,6 @@ until its milestone M6d.10 decides their home.
 | Topic | Candidates | Decided at |
 |---|---|---|
 | The format of layouts | the engine's notation laid out as scene files, a markup of its own, a subset of HTML and CSS; [the survey](survey-writing-an-application.md#2-the-format-of-layouts) | SlimeEngine's M6d.1d |
-| Rust's code reloaded, its state kept | decided, but the rivals' times: a function's body through `subsecond` and `dx`, applied between two frames, `uwui dev` compiling with line tables alone, within the budget of a change seen at Slatty's size ([SlimeEngine's ADR-0212](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0212-a-functions-body-reloaded-through-subsecond-and-dx.md), [measured](measurements.md#a-functions-body-reloaded-through-subsecond-2026-11-07)); a type's state through signals named by their authors, kept through `serde` ([SlimeEngine's ADR-0210](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0210-signals-named-for-a-reload.md), [measured](measurements.md#signals-named-across-a-reload-2026-11-07)). The rivals' reloads, timed beside it | SlimeEngine's M6d.1c3b |
 | Games' interfaces, HUD, inventories, dialogues and interfaces within the world | uwui's core with a layer of the engine's, the direction that [SlimeEngine's ADR-0209](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0209-platforms-the-editor-and-agents.md) takes, confirmed by a measure of *Hunna Wood*'s HUD and a menu driven by a gamepad, [as the engine proposes it](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/uwui-needs.md#for-m6d10); a framework of their own if it fails | SlimeEngine's M6d.10 |
 | How vector shapes are drawn | by measurement: tessellated on the CPU, distance fields, or stencil then cover | the first stage's drawing |
 
@@ -243,6 +242,15 @@ of power.
   ([ADR-0211](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0211-the-executor-and-other-threads-through-channels.md),
   [measured](measurements.md#the-interfaces-executor-and-other-threads-2026-11-07)). The adapter
   for tokio apart.
+- Rust's code reloaded while the application runs: a function's body through `subsecond`, its
+  patches compiled and sent by `dx` and applied by the host between two frames, `uwui dev`
+  compiling with line tables alone
+  ([ADR-0212](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0212-a-functions-body-reloaded-through-subsecond-and-dx.md),
+  [measured](measurements.md#a-functions-body-reloaded-through-subsecond-2026-11-07), beside
+  [the rivals' reloads](measurements.md#the-rivals-reloads-2026-11-07)); a type's state through
+  signals named by their authors, kept through `serde`
+  ([ADR-0210](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0210-signals-named-for-a-reload.md),
+  [measured](measurements.md#signals-named-across-a-reload-2026-11-07)).
 - A library of components in layers, as gpui-kit's: behaviour and state in uwui, the look in
   themes, one dependency for an application; chosen from the needs of the first stage's programs,
   tables among them; every component held to the same bar.

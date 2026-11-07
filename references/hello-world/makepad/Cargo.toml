@@ -1,0 +1,7 @@
+[package]
+name = "hello-makepad"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+makepad-widgets = { git = "https://github.com/makepad/makepad", rev = "506ec05105b9adb08d1d21f9879df181b5244ea7", default-features = false }

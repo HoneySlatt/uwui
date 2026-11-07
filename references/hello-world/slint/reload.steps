@@ -1,0 +1,10 @@
+# The live preview of Slint, timed by scripts/reloads.sh in the copy that reload.sh made: the text
+# is in a `.slint` file, which Slint's interpreter reads again; no Rust is compiled. The file is
+# saved by a rename once, then written in place 21 times (docs/measurements.md, "The rivals'
+# reloads").
+still 600
+shot before
+save renamed 1 ui/app-window.slint '"Hello, World!"' '"Hello, Reload!"' --limit 10
+save markup 21 ui/app-window.slint '"Hello, World!"' '"Hello, Reload!"' --in-place --limit 120
+shot after
+memory after

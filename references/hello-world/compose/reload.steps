@@ -1,0 +1,11 @@
+# The hot reload of Compose, timed by scripts/reloads.sh in the copy that reload.sh made: the text
+# is in the composable `App`, whose class the JetBrains Runtime redefines. Under its reload, the
+# program draws without end, and Gradle's daemon watches the files: it never stands still. The steps
+# wait for Gradle's start, measure 10 s of that rest, then pause 5 s around each save, and compare
+# only the region of the text and the button.
+sleep 90
+shot before
+measure rest 10
+save body 21 shared/src/commonMain/kotlin/org/example/project/App.kt '"Hello, World!"' '"Hello, Reload!"' --region 1030,640,500,140 --pause 5 --limit 120
+shot after
+memory after

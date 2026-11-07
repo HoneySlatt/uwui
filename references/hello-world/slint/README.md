@@ -49,3 +49,12 @@ libgcc_s and fontconfig, with FreeType. At run time it loads the libraries that 
 on `LD_LIBRARY_PATH`. In a headless sway it loaded libwayland-client, libwayland-egl, libEGL with
 the system's Mesa drivers, and libX11. It also tries the D-Bus session bus for the desktop's
 settings, and prints an error when there is none.
+
+## Reload
+
+`reload.sh <out>` prepares the live preview that `scripts/reloads.sh` times, as Slint's
+documentation runs it ("Live Preview in Your Application", read on 2026-11-07,
+<https://github.com/slint-ui/slint/blob/master/docs/astro/src/content/docs/guide/tooling/live-preview.mdx>):
+a debug build with the feature `slint/live-preview` and `SLINT_LIVE_PREVIEW=1`, run by `cargo run`.
+The interpreter reads `ui/app-window.slint` again; no Rust is compiled. How each save is written,
+and why, is in [`docs/measurements.md`](../../../docs/measurements.md#the-rivals-reloads-2026-11-07).

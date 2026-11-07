@@ -54,3 +54,13 @@ From the system it loads GTK 3 and its stack (GLib, Pango, Cairo, HarfBuzz, ATK,
 libepoxy and EGL/OpenGL ES (libglvnd and the Mesa driver). The runner's RUNPATH points to these
 libraries in the Nix store. It runs natively on Wayland, through GTK, and draws with Impeller on
 OpenGL ES.
+
+## Reload
+
+`reload.sh <out>` prepares the hot reload that `scripts/reloads.sh` times, as Flutter's
+documentation runs it ([Hot reload](https://docs.flutter.dev/tools/hot-reload), read on
+2026-11-07): a debug build run by `flutter run -d linux`. `flutter run` watches no file: an editor
+asks it to reload, which `reload.steps` does after each save by the signal SIGUSR1, sent to the pid
+that `flutter run --pid-file` writes. `reload.sh` turns off Flutter's and Dart's telemetry in the
+home folder under `<out>`, and lets the tool reach the program's VM service on the loopback,
+outside the closed proxy that `scripts/measure.py` sets.

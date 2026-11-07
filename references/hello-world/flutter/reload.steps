@@ -1,0 +1,8 @@
+# The hot reload of Flutter, timed by scripts/reloads.sh in the copy that reload.sh made: the text
+# is in the widget's `build` method, which the Dart VM loads again. After each save, the step sends
+# SIGUSR1 to the pid that `flutter run` wrote, as an editor's reload on save asks it.
+still 600
+shot before
+save body 21 lib/main.dart "'Hello, World!'" "'Hello, Reload!'" --then 'kill -USR1 "$(cat ../flutter.pid)"' --limit 120
+shot after
+memory after
