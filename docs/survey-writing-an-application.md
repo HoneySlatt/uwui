@@ -12,8 +12,9 @@ Every fact was read on 2026-11-06 in the reference's current documentation or so
 its version. A fact that could not be checked in a primary source says so. Nothing here was built,
 run or measured: the figures quoted are the references' authors'.
 
-Update this file only to correct a fact. A newer version of a reference is read again at the
-milestone that needs it.
+Update this file only to correct a fact, or to add a question that a later part of M6d.1 reads,
+with the date it was read. A newer version of a reference is read again at the milestone that
+needs it.
 
 ## The references
 
@@ -401,8 +402,10 @@ the whole programs.
 - **Slint**: styles chosen at build time, `fluent`, `material`, `cupertino`, `cosmic`, `qt`, each
   light and dark; shared values in global singletons
   ([style](https://github.com/slint-ui/slint/blob/master/docs/astro/src/content/docs/reference/std-widgets/style.mdx)).
-- **Makepad**: themes are Splash sheets read again when chosen; widgets read `theme.*` tokens
-  (`widgets/themes/`).
+- **Makepad**: themes are Splash sheets read again when chosen, each two files: `theme.splash`,
+  the tokens that widgets read, and `widgets.splash`, assignments on widgets' kinds, a face's
+  shader among them (`widgets/sheets/themes/<id>/`, 39 themes, commit `506ec05`, read on
+  2026-11-09).
 - **Rune**: tokens in Rust values, colours in OKLCH, a motion palette; a crate maps another design's
   `theme.json` onto its kit (`themes/opencode`).
 - **SwiftUI**: styles are code, `ButtonStyle` and modifiers passed down the environment; no theme
@@ -430,6 +433,46 @@ style's or a layout's reload, and a type's migration, are in [section 3](#3-the-
 
 What it tells M6d.1c: `subsecond` is the only tool for Rust's code that covers the web and Android;
 a model that owns its views' entry points can call through it on each.
+
+## 9. Themes that change a component's structure
+
+Read on 2026-11-09 for SlimeEngine's M6d.1d1: what a theme holds, and whether it may change the
+tree of parts that a component draws, as a switch drawn as a box with a tick in one theme and as
+a pill with a thumb in another. Each reference was read in its documentation and source at the
+version named.
+
+| Reference | Values | Rules that select | The parts' tree changed by a theme |
+|---|---|---|---|
+| Qt Quick Controls 6.12.0 | a typed `palette`; an attached `Material` or `Universal` | none: one QML file per control | yes: a style is "a set of QML files within a single directory", each control's file rooted in its behaviour's type from `QtQuick.Templates`, its parts `background`, `contentItem`, `indicator` ([customizing](https://doc.qt.io/qt-6/qtquickcontrols-customize.html)) |
+| WPF, WinUI 3 | typed resources by key; WinUI's `ThemeResource` for light, dark and high contrast | `Style` by type or key, with triggers | yes: a `ControlTemplate` replaces the control's tree whole, under the parts that `TemplatePartAttribute` names (`PART_…`) ([WPF](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/creating-a-control-that-has-a-customizable-appearance)) |
+| Slint 1.18.1 | typed globals, `Palette` and `StyleMetrics` | none | yes, as each style re-implements each widget whole, behaviour and accessibility included (`internal/compiler/widgets/*/switch.slint`); styles chosen at build time, `fluent` by default |
+| Flutter 3.47.9 | typed `ThemeData`, `ThemeExtension` | none: each widget merges its theme's layers | no: another structure is another widget, `Switch.adaptive` choosing Material's or Cupertino's; both now packages of their own, `material_ui` and `cupertino_ui` |
+| Jetpack Compose, `androidx-main` | typed `CompositionLocal`s | none | no: a design system is a library of components; slots, as `Switch`'s `thumbContent`, are the one structural hook ([custom design systems](https://developer.android.com/develop/ui/compose/designsystems/custom)) |
+| gpui-kit 0.9.0 | JSON themes read into typed colours, 21 shipped | none: tokens applied by code | no from a JSON theme; a look of another shape is another layer over `gpui-base`, which "owns reusable behavior and the geometry required to implement it" (`docs/ARCHITECTURE.md`) |
+| Iced 0.14.0 | a typed `Palette` | a `Catalog` trait per widget: a class and a status give a `Style` | no: the widget's `draw` is fixed |
+| Floem, `1351ffb` | a typed `DesignSystem` | one `Style` that targets classes of `style_class!` | no: views paint themselves |
+| Makepad, `506ec05` | `theme.splash`'s tokens | assignments on widgets' kinds in `widgets.splash` | partly: a sheet rewrites a widget's face, its shader, over the tree that exists; no sheet read adds or removes parts |
+| Radix Primitives, React Aria | none | the application's CSS, on `data-state` and default classes | the application writes the tree out of the library's parts; the library keeps roles, focus and keys |
+
+What they hold for the contract between a component and the parts that a theme gives it:
+
+- Behaviour and accessibility stay with the control, not its parts: Qt's role is the template's
+  (`QQuickAbstractButton::accessibleRole`), WinUI's and WPF's the control's automation peer,
+  Radix's the root's `role="switch"`.
+- A part left out must not break the control: WPF's rule is "Your control should not throw an
+  exception or report an error if a FrameworkElement, VisualState, or VisualStateGroup is missing
+  from the ControlTemplate"; Qt's template tests each part, `if (indicator)`. Radix leaves it to
+  the author: "it is your responsibility to ensure it remains accessible and functional".
+- A control made of others needs each of them styled: Qt asks a style for both `ScrollBar.qml`
+  and `ScrollView.qml`; WPF's parts may be controls, `PART_EditableTextBox` a `TextBox`.
+- A style that owns the whole widget repeats its behaviour: Slint declares the switch's
+  accessible role once in each style's file.
+- Themes drift from their framework's versions: Flutter moved Material and Cupertino out into
+  packages of their own, `material_ui` pinning the Flutter it runs on.
+
+What it tells M6d.1d1: themes change a component's structure only where the parts' tree is data
+or code that the theme owns, under a contract of named parts that keeps behaviour and meaning on
+the control (Qt, WPF); elsewhere, another look is another library of components.
 
 ## What stays open
 

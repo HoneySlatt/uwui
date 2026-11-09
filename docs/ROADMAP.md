@@ -205,7 +205,7 @@ until its milestone M6d.10 decides their home.
 
 | Topic | Candidates | Decided at |
 |---|---|---|
-| The format of layouts | the engine's notation laid out as scene files, a markup of its own, a subset of HTML and CSS; [the survey](survey-writing-an-application.md#2-the-format-of-layouts) | SlimeEngine's M6d.1d |
+| The format of layouts, which describes the themes' parts too ([ADR-0222](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0222-what-a-theme-is.md)) | the engine's notation laid out as scene files, a markup of its own, a subset of HTML and CSS; [the survey](survey-writing-an-application.md#2-the-format-of-layouts) | SlimeEngine's M6d.1d2 |
 | Games' interfaces, HUD, inventories, dialogues and interfaces within the world | uwui's core with a layer of the engine's, the direction that [SlimeEngine's ADR-0209](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0209-platforms-the-editor-and-agents.md) takes, confirmed by a measure of *Hunna Wood*'s HUD and a menu driven by a gamepad, [as the engine proposes it](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/uwui-needs.md#for-m6d10); a framework of their own if it fails | SlimeEngine's M6d.10 |
 | How vector shapes are drawn | by measurement: tessellated on the CPU, distance fields, or stencil then cover | the first stage's drawing |
 
@@ -251,9 +251,17 @@ of power.
   signals named by their authors, kept through `serde`
   ([ADR-0210](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0210-signals-named-for-a-reload.md),
   [measured](measurements.md#signals-named-across-a-reload-2026-11-07)).
-- A library of components in layers, as gpui-kit's: behaviour and state in uwui, the look in
-  themes, one dependency for an application; chosen from the needs of the first stage's programs,
-  tables among them; every component held to the same bar.
+- A library of components in layers: behaviour, state, focus and meaning in uwui's components,
+  the look in the themes' parts, written as data, one dependency for an application; chosen from
+  the needs of the first stage's programs, tables among them; every component held to the same
+  bar. A theme holds values, rules and, for any component it chooses, its parts: states reach them
+  through rules, values that move as shares read when drawn, the application's content through
+  slots; a component without parts in its theme takes the core's ([ADR-0222](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0222-what-a-theme-is.md)).
+- Styles written in code: an element's own style, typed, with its states, naming the themes'
+  values by tokens; over the rules, under the user's density, contrast and size of text
+  ([ADR-0223](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0223-styles-written-in-code-through-tokens.md)). A theme's or a style sheet's file changed is sent by `uwui dev` over its one connection,
+  which relays `dx`'s patches, and seen in milliseconds ([ADR-0224](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0224-a-files-change-reaches-the-application-through-the-development-tool.md),
+  [measured](measurements.md#a-style-sheets-change-seen-2026-11-09)).
 - The core's own look, light, dark and of high contrast, in three densities; the official themes
   Glass, Material 3 Expressive and Pro, each a crate of its own in this repository with its own
   version, which the core never depends on ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).

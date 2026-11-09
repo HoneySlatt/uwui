@@ -2240,3 +2240,59 @@ CRC-32. No probe runs in the programs.
 Not measured: the rivals on the web, Android and the owner's laptop; their reloads at Slatty's size;
 a change of a type's state, which [the survey](survey-writing-an-application.md#a-type-whose-state-migrates)
 reads.
+
+## A style sheet's change seen (2026-11-09)
+
+A style sheet's change, from its save to the frame that shows it, the state kept, on the bench of
+SlimeEngine's milestone M6d.1d1
+([ADR-0224](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0224-a-files-change-reaches-the-application-through-the-development-tool.md)).
+Slatty's library on signals is played to a game's page: its grid scrolled, a filter typed, the
+selection moved. Then, at each run, the bench saves the screen's style sheet with its title's size
+changed, 52 then 44 then 52, as an editor writes a new file and renames it over the old one. A
+thread of the bench looks at the file's time of change each millisecond, standing for the
+development tool's watcher. Once it changed, the thread reads the text, hands it to the host and
+wakes it. The host styles the interface again with it (`Ui::set_themes`, the theme shown kept), and
+runs the frame that shows it.
+
+The prototype goes on from M6d.1c's, on the branch
+[`m6d1c-bench`](https://github.com/HoneySlatt/SlimeEngine/tree/m6d1c-bench/benches/src/prototypes),
+in `style_reload.rs`, thrown away once M6d.1 ends.
+
+- Machine: AMD Ryzen 7 5800X, 32 GB, Linux 7.3.1; at rest, but for other sessions' light work, a
+  load average of 1.1 to 2.3.
+- Build: SlimeEngine's branch `m6d1c-bench` at `dbf86fc`, rustc 1.99.0. Release, and the `dev`
+  profile, without optimisation, as an author runs an application.
+- Command, inside SlimeEngine's `nix develop`: `cargo run --release -p slime-benches --
+  --prototypes --style --runs 21`, and the same without `--release`.
+- Each time: the median of 21 runs, with their range, in milliseconds; a session's first change
+  apart. Each run checks that its frame shows the new size with the scroll, the selection, the
+  field's text, the filter and the page kept: all 21 did, in each series.
+
+### From a change saved to the frame that shows it
+
+| Build | Noticed | Read | Rules made again | Its frame | Whole | A session's first |
+|---|---|---|---|---|---|---|
+| Release | 0.44 (0.20–1.00) | 0.46 (0.21–1.01) | 1.44 (1.26–1.70) | 0.97 (0.86–1.30) | 2.94 (2.43–3.67) | 2.86 |
+| Debug | 0.60 (0.02–0.91) | 0.62 (0.04–0.93) | 8.29 (7.90–10.27) | 4.73 (4.55–6.21) | 13.58 (12.90–16.30) | 16.39 |
+
+- *Noticed* and *Read*: from the save to the watcher's sight of the change, then to the file read.
+  They hang on the watcher's look each millisecond; a tool told by the system, inotify,
+  `ReadDirectoryChangesW` or FSEvents, has another delay, measured when it is built.
+- *Rules made again*: the screen's two style sheets and the two themes, dark and light, read and
+  their rules made, once for each theme.
+- *Its frame*: every element styled again, laid out and drawn into the display list.
+- *Whole*: from the save, once the file is renamed, to the end of the frame's display list.
+
+### What they say
+
+- A style's change is seen far within the budget of a change seen, 2 s: some 3 ms in a release
+  build, 14 ms in an author's debug build. Rust's code takes some 1.7 s through `dx` at Slatty's
+  size ([above](#a-functions-body-reloaded-through-subsecond-2026-11-07)); Slint's interpreter,
+  0.31 s, and Dioxus's RSX, 0.04 s ([the rivals](#the-rivals-reloads-2026-11-07)), on a "Hello,
+  World!".
+- The program's part is the rules made again for each theme, then a frame that styles every element:
+  the cost grows with the themes given and the elements shown.
+- The state is kept: a style's change runs no view.
+
+Not measured: the tool's watcher and its connection, which do not exist yet; the web and Android;
+Windows and macOS; a window's frame; the owner's laptop.
