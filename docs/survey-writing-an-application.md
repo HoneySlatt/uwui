@@ -399,6 +399,30 @@ What it tells M6d.1d: Rune and SwiftUI's built-in effects keep motion out of the
 Iced run views at every frame of an animation. Only Rune reads the time a frame will be shown, and
 only on macOS.
 
+### What platforms give of a frame's time
+
+Read on 2026-11-09 for SlimeEngine's M6d.1d2b: what each platform tells a program of when a frame
+shows, and of when an input happened, in each one's current documentation. Nothing was run.
+
+| Platform | A frame's time of presentation | Input's times | Comparable |
+|---|---|---|---|
+| Wayland | past: `wp_presentation`'s `presented`, the time the content "turned into light the first time", in the clock that `clock_id` names, with `refresh`, the next refresh predicted, and `seq` ([`presentation-time.xml`](https://gitlab.freedesktop.org/wayland/wayland-protocols/-/blob/main/stable/presentation-time/presentation-time.xml), stable, version 3); a time asked "not before", `wp_commit_timing_v1` (staging); `wl_surface.frame`'s `done` is "the current time, in milliseconds, with an undefined base" | milliseconds "with an undefined base"; nanoseconds through `zwp_input_timestamps_v1` (unstable), in the same domain | not promised: `clock_id` "implies nothing about" input's times |
+| macOS 14 and later, iOS | future: `CADisplayLink.targetTimestamp`, "when the next frame displays"; past: `timestamp` ([Apple](https://developer.apple.com/documentation/quartzcore/cadisplaylink/targettimestamp)); `CVDisplayLink`'s functions deprecated in macOS 15 | `NSEvent`'s and `UIEvent`'s `timestamp`, seconds since the system started | likely, not stated |
+| Android | future, from API 33: `FrameTimeline.getExpectedPresentationTimeNanos()`, "expected to be presented", in `System.nanoTime()`; before, `doFrame(frameTimeNanos)`, the frame's start, whose use for animations "causes animations to skip forward after late frames" ([Choreographer](https://developer.android.com/reference/android/view/Choreographer.FrameData)) | `getEventTimeNanos()` (API 34) and `getEventTime()`, in `uptimeMillis()`'s base | yes, documented |
+| Windows | past: `DXGI_FRAME_STATISTICS.SyncQPCTime`, in flip model or full screen only, "not reliable in many multiple monitor scenarios"; `DWM_TIMING_INFO`'s `qpcVBlank` and `qpcRefreshPeriod`, for the whole desktop; a time asked, `IPresentationManager`'s `SetTargetTime`, from build 22000 ([DXGI](https://learn.microsoft.com/en-us/windows/win32/api/dxgi/nf-dxgi-idxgiswapchain-getframestatistics)) | `GetMessageTime`, milliseconds of the tick count, which wraps; `POINTER_INFO.PerformanceCount`, the performance counter | `PerformanceCount` with DXGI's and DWM's times, yes; the tick count no; the presentation manager's interrupt time and the performance counter are two clocks, their conversion not documented |
+| The web | none: `requestAnimationFrame`'s argument is the event loop's "last render opportunity time", in milliseconds since the time origin, coarsened to 100 µs, 5 µs when cross-origin isolated ([HTML](https://html.spec.whatwg.org/multipage/webappapis.html#event-loop-processing-model)) | `Event.timeStamp`, from the same origin | yes |
+| winit 0.30.13 | none; Wayland's frame callback's time dropped (`wayland/state.rs`); `MonitorHandle::refresh_rate_millihertz()` gives the mode's rate | none: `KeyEvent` and `Touch` carry no time | — |
+| wgpu 30.0.1 | none: `Adapter::get_presentation_timestamp()` reads the current time in the presentation's clock; `VK_GOOGLE_display_timing` only through `as_hal` | — | — |
+
+`std::time::Instant::now()` panics on `wasm32-unknown-unknown`, "time not implemented on this
+platform" (std's `sys/time/unsupported.rs`, read on Rust's `master`); on WASI it reads
+`CLOCK_MONOTONIC`. The crate `web-time` gives an `Instant` on `performance.now()`, and winit uses
+it on the web.
+
+What it tells M6d.1d2b: a future time of presentation exists on Apple and on Android from API 33,
+a past one on Wayland and Windows, none on the web; X11's Present extension was not read. Neither winit nor wgpu passes any on,
+so uwui's hosts read them with code of their own.
+
 ## 6. An application started in one call
 
 | Reference | Its start |
@@ -502,8 +526,37 @@ What it tells M6d.1d1: themes change a component's structure only where the part
 or code that the theme owns, under a contract of named parts that keeps behaviour and meaning on
 the control (Qt, WPF); elsewhere, another look is another library of components.
 
+## 10. The system's preferences
+
+Read on 2026-11-09 for SlimeEngine's M6d.1d2b: which of the system's preferences each platform
+gives a program, in each one's current documentation.
+
+| Platform | Light or dark | Contrast | Less motion | Less transparency | Size of text |
+|---|---|---|---|---|---|
+| Linux, the desktop's portal ([`org.freedesktop.portal.Settings`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html), version 2) | `color-scheme`, 0 none, 1 dark, 2 light (portal 1.12.0) | `contrast`, 0 normal, 1 higher (1.19.0, by its tags) | `reduced-motion` (1.21.0, 2026-01-21) | none | none among its keys |
+| GNOME, through the portal's own namespaces | as above | `org.gnome.desktop.a11y.interface high-contrast` | `org.gnome.desktop.a11y.interface reduced-motion`; `org.gnome.desktop.interface enable-animations` | none found | `org.gnome.desktop.interface text-scaling-factor`, 0.5 to 3.0 |
+| KDE, through the portal | as above | none | from `AnimationDurationFactor` at 0 | none found | its fonts in `org.kde.kdeglobals.<group>`; its DPI not found |
+| Windows | through `UISettings`' colours | `SPI_GETHIGHCONTRAST` | `UISettings.AnimationsEnabled` | `UISettings.AdvancedEffectsEnabled` | `UISettings.TextScaleFactor` |
+| macOS | `effectiveAppearance` | `accessibilityDisplayShouldIncreaseContrast` | `…ShouldReduceMotion` | `…ShouldReduceTransparency` | none found |
+| iOS | trait collection | `isDarkerSystemColorsEnabled` | `isReduceMotionEnabled` | `isReduceTransparencyEnabled` | Dynamic Type, `preferredContentSizeCategory` |
+| Android | `Configuration.uiMode` | high-contrast text (API 36) | `ValueAnimator.areAnimatorsEnabled()` (API 26) | not searched | `fontScale`, "no longer used as a direct multiplier" from API 34 |
+| The web ([Media Queries 5](https://drafts.csswg.org/mediaqueries-5/)) | `prefers-color-scheme` | `prefers-contrast`, `forced-colors` | `prefers-reduced-motion` | `prefers-reduced-transparency`: Chrome 118, Firefox behind a flag, Safari none | none |
+| winit 0.30.13 | `Window::theme()` and `ThemeChanged` on Windows, macOS and the web; on Wayland "only returns theme overrides", on X11 none | none | none | none | none |
+
+The portal sends `SettingChanged` when a setting changes. winit's decorations on Wayland read
+`color-scheme` through `dbus-send` for themselves, and give it to no program.
+
+What it tells M6d.1d2b: winit gives light or dark on three platforms, and nothing else. Each
+platform gives the others by its own means, with gaps: Linux's portal holds neither the size of
+text nor less transparency, KDE's no contrast, macOS and the web no size of text, Safari no less
+transparency; Android's less transparency was not searched.
+
 ## What stays open
 
+- Not read: X11's Present extension, for a frame's time. Not checked in a primary source: whether
+  Apple's `CADisplayLink.timestamp` and `NSEvent.timestamp` share a clock; which statistics Windows'
+  presentation manager gives a swap chain (its page was missing); where KDE keeps its fonts' DPI;
+  the sources of saving power on each platform.
 - Floem's WebGPU support is "highly experimental" (`examples/webgpu/README.md`, `main`); it has no
   Android port, its maintainer citing no time for one
   ([issue #619](https://github.com/lapce/floem/issues/619), open).

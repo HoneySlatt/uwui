@@ -191,8 +191,9 @@ until its milestone M6d.10 decides their home.
   an iPhone are debt until one is at hand ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
 - Blind tests by people: an application's captures compared with its rivals' without knowing which
   is which ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)).
-- No look imposed: `uwui new` asks which look, uwui's own, Glass, Material 3 Expressive, Pro or
-  blank; a test of signature checks that applications on uwui are not recognised by their look
+- No look imposed: `uwui new` asks which look, uwui's own, Plain, Glass, Material 3 Expressive or
+  Pro; each root is given its look, never by default
+  ([ADR-0226](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0226-an-application-started-in-one-call-each-root-given-its-look.md)); a test of signature checks that applications on uwui are not recognised by their look
   ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)).
 - The official themes' images of reference run in uwui's CI: a change that breaks one is refused
   ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
@@ -227,6 +228,13 @@ of power.
   application started in one call, its components drawn from their state, events handled by
   closures on the elements, styles written in code beside the themes' files, layouts and Rust's
   code reloaded at once, the state kept.
+- An application started in one call, `uwui::run`, which names its look, under an attribute that
+  writes each platform's entry, from the one crate that an application in the core's look names,
+  its *facade*; another look is a crate beside it; the engine and libraries of components name
+  the core. Each root given its target and its look,
+  replaced while it runs with its state kept; the application's themes, sheets and parts stacked
+  over it, a component's parts replaced whole; one macro, `files!`, for an application's files,
+  embedded in every build ([ADR-0226](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0226-an-application-started-in-one-call-each-root-given-its-look.md)).
 - State that changes the interface through signals, and the frame's values through live values,
   cells that any thread writes and an element reads as it is drawn
   ([ADR-0205](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0205-signals-change-uwuis-interface.md),
@@ -251,7 +259,7 @@ of power.
   ([ADR-0210](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0210-signals-named-for-a-reload.md),
   [measured](measurements.md#signals-named-across-a-reload-2026-11-07)).
 - A library of components in layers: behaviour, state, focus and meaning in uwui's components,
-  the look in the themes' parts, written as data, one dependency for an application; chosen from
+  the look in the themes' parts, written as data, reached through the facade; chosen from
   the needs of the first stage's programs, tables among them; every component held to the same
   bar. A theme holds values, rules and, for any component it chooses, its parts: states reach them
   through rules, values that move as shares read when drawn, the application's content through
@@ -275,7 +283,11 @@ of power.
   its depth bounded and fuzzed, which writes a document back with its order, formatting and
   comments kept; the official tests of KDL's specification put to the owner before they are
   downloaded.
-- The core's own look, light, dark and of high contrast, in three densities; the official themes
+- The core's own look, light, dark and of high contrast, in three densities, and its variant
+  *Plain*, the core's parts in forced colours' roles, a designer's start; the system's preferences
+  followed, light or dark, contrast and forced colours, less motion and transparency, the size of
+  text and saving power, read by a crate of uwui's that the engine's platform layer calls too
+  ([ADR-0226](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0226-an-application-started-in-one-call-each-root-given-its-look.md)); the official themes
   Glass, Material 3 Expressive and Pro, each a crate of its own in this repository with its own
   version, which the core never depends on ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
 - What differs between platforms and an application needs, in uwui: files and settings, the network,
