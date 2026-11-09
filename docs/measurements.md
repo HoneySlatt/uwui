@@ -2264,7 +2264,7 @@ in `style_reload.rs`, thrown away once M6d.1 ends.
   profile, without optimisation, as an author runs an application. The review's changes after it,
   at `9e6cfa4`, add checks and touch no timed path.
 - Command, inside SlimeEngine's `nix develop`: `cargo build --release -p slime-benches`, then
-  `target/release/slime-benches --prototypes --style --runs 21` from `benches/`, and the same in
+  `../target/release/slime-benches --prototypes --style --runs 21` from `benches/`, and the same in
   the `dev` profile.
 - Each time: the median of 21 runs, with their range, in milliseconds; a session's first change
   apart. Each run checks that its frame shows the new size with the scroll, the selection, the
@@ -2302,3 +2302,109 @@ in `style_reload.rs`, thrown away once M6d.1 ends.
 
 Not measured: the tool's watcher and its connection, which do not exist yet; the web and Android;
 Windows and macOS; a window's frame; the owner's laptop.
+
+## A layout's change seen (2026-11-09)
+
+A layout's change, from its save to the frame that shows it, the state kept, on the bench of
+SlimeEngine's milestone M6d.1d2a
+([ADR-0225](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0225-layouts-written-in-kdl-reached-from-code-by-their-names.md)).
+Slatty's library is written as layouts in KDL 2.0, its search field, its grid of covers, a cover
+and a game's page; the view's code binds each named element by its name, and fills the page's
+slot. It is played to a game's page: its grid scrolled, a filter typed, the selection moved. Then,
+at each run, the bench saves the layouts' file with a label added before the grid, or taken away
+again, as an editor writes a new file and renames it over the old one. The same watcher as the
+style sheet's, a thread that looks at the file's time of change each millisecond, reads it and
+wakes the host. The application reads the text into layouts and sets their signal; the frame
+makes the library's top layout again with its bindings, the covers of the cells that show and the
+page, and mounts them over the tree, whose elements keep their state by their names.
+
+The prototype goes on from M6d.1d1's, on the branch
+[`m6d1c-bench`](https://github.com/HoneySlatt/SlimeEngine/tree/m6d1c-bench/benches/src/prototypes),
+in `layout_reload.rs`, `signals/layout.rs` and `signals/laid.rs`, thrown away once M6d.1 ends. It
+reads KDL through the crate `kdl` 6.7.1, which uwui does not take: its own reader comes with its
+first stage.
+
+- Machine: AMD Ryzen 7 5800X, 32 GB, Linux 7.3.1; at rest but for a browser in use, a load
+  average over one minute of 2.4 to 3.7.
+- Build: SlimeEngine's branch `m6d1c-bench` at `a66f364`, rustc 1.99.0. Release, and the `dev`
+  profile, without optimisation, as an author runs an application. The review's change after it,
+  at `68769b7`, refuses more inputs in the look that the text gets before `kdl` reads it, a few
+  hundred bytes scanned once more, and touches nothing else that is timed.
+- Command, inside SlimeEngine's `nix develop`: `cargo build --release -p slime-benches`, then
+  `../target/release/slime-benches --prototypes --layout --runs 21` from `benches/`, and the same in
+  the `dev` profile.
+- Each time: the median of 21 runs, with their range, in milliseconds; a session's first change
+  apart. Each run checks that its frame shows the label added or taken away with the scroll, the
+  selection, the field's text, the filter and the page kept, and that the application noted no
+  binding left unused: all 21 did, in each series. Tests check that the view's function does not
+  run again.
+
+### From a change saved to the frame that shows it
+
+| Build | Noticed | Read | Relaid | Its frame | Whole | A session's first | Code run |
+|---|---|---|---|---|---|---|---|
+| Release | 0.53 (0.30–0.99) | 0.55 (0.32–1.01) | 0.40 (0.36–0.51) | 0.78 (0.74–1.13) | 1.78 (1.51–2.66) | 1.71 | 106 |
+| Debug | 0.64 (0.00–1.04) | 0.66 (0.02–1.06) | 3.98 (3.26–4.50) | 4.64 (4.38–5.96) | 9.32 (8.09–11.17) | 10.56 | 106 |
+
+- *Noticed* and *Read*: as the style sheet's, hanging on the watcher's look each millisecond.
+- *Relaid*: the text checked, read by `kdl` into layouts, compared with the last ones and their
+  signal set.
+- *Its frame*: the library's top layout made again with its bindings, the cells' covers and the
+  page made again, mounted over the tree, styled, laid out and drawn into the display list.
+- *Whole*: from the save, once the file is renamed, to the end of the frame's display list.
+- *Code run*: the units of the application's code that the frame counted, as a reload's are
+  counted: the top layout's view run again and the 105 covers of the cells that show. The bindings
+  made anew and the page's view, which run as they are made, are not counted; the view's function
+  does not run.
+
+### What they say
+
+- The program's part of a layout's change is far within the budget of a change seen, 2 s: some
+  2 ms in a release build, 9 ms in an author's debug build, to the display list. As for a style,
+  the whole adds the development tool's watcher, its interval and its connection, and a frame
+  presented, measured when the tool is built.
+- A layout's change costs about what a style sheet's does, but its cost differs: it runs code, the
+  covers of the cells that show made again, where a style runs none; it styles again only what it
+  made. It grows with the elements below the layout that changed, not with the themes.
+- The state is kept by the elements' names: a label added before the grid moves the grid's place
+  among its siblings, and its scroll and selection stay.
+- `kdl` 6.7.1 reads by recursion without a bound: in a debug build, a hundred `/-` in a row, or a
+  thousand `a )`, overflow a 2 MiB stack and abort the program. The prototype looks at the text
+  before it reads and refuses the cases that its reviews found; the look is partial, and other
+  inputs may still abort it. uwui's own reader bounds its depth.
+
+Not measured: the tool's watcher and its connection; what `dx` does when a file that a macro
+reads changes; the web and Android; Windows and macOS; a window's frame; the owner's laptop.
+
+## The notations of layouts, counted (2026-11-09)
+
+The same screens written in each notation that SlimeEngine's milestone M6d.1d2a weighed for
+layouts
+([ADR-0225](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0225-layouts-written-in-kdl-reached-from-code-by-their-names.md)):
+Slatty's library, its cover and a game's page, "Hello, World!", and the parts of a switch and of a
+check box. The lead of the milestone wrote one sample in each notation; the review of its design
+rewrote the KDL and the TOML at their best: the KDL with its names and texts apart
+(`label title`, `label text="Hello, World!"`), the TOML with its own shorthands, and with
+positional arrays. The XML and the flat TOML are the first samples. The KDL counted names the rows'
+layout of its grid (`row=cover`) and no command.
+
+No tokenizer of a model was used. Three counts stand for one: *words*, each run of letters,
+digits and `_` and each other symbol; *runs*, the same with each run of symbols counted once, as a
+tokenizer merges them; *unquoted*, the words without the double quotes.
+
+| Notation | Bytes | Lines | Words | Runs | Unquoted |
+|---|---|---|---|---|---|
+| KDL 2.0, names and texts apart | 756 | 40 | 157 | 151 | 151 |
+| KDL 2.0, the first sample | 743 | 40 | 153 | 149 | 145 |
+| TOML, positional arrays | 823 | 23 | 314 | 242 | 238 |
+| TOML, its own shorthands, lines broken within arrays | 926 | 31 | 304 | 277 | 258 |
+| TOML, the first sample, nested inline tables | 955 | 34 | 313 | 287 | 267 |
+| TOML, flat as scene files | 1,180 | 86 | 365 | 363 | 273 |
+| A subset of XML | 1,047 | 42 | 342 | 257 | 290 |
+
+- Every TOML sample but the first reads as TOML 1.0, which lets an array span lines but not an
+  inline table; the first spreads inline tables over several lines, which only TOML 1.1 reads.
+- KDL takes the fewest tokens by every count: the best TOML takes 1.6 to 1.9 times as many, the
+  XML 1.7 to 2.2.
+- A file's tokens are not an agent's: whether agents write a notation well, at once and in few
+  tries, is the agent bench's to measure.

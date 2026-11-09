@@ -205,7 +205,6 @@ until its milestone M6d.10 decides their home.
 
 | Topic | Candidates | Decided at |
 |---|---|---|
-| The format of layouts, which describes the themes' parts too ([ADR-0222](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0222-what-a-theme-is.md)) | the engine's notation laid out as scene files, a markup of its own, a subset of HTML and CSS; [the survey](survey-writing-an-application.md#2-the-format-of-layouts) | SlimeEngine's M6d.1d2 |
 | Games' interfaces, HUD, inventories, dialogues and interfaces within the world | uwui's core with a layer of the engine's, the direction that [SlimeEngine's ADR-0209](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0209-platforms-the-editor-and-agents.md) takes, confirmed by a measure of *Hunna Wood*'s HUD and a menu driven by a gamepad, [as the engine proposes it](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/uwui-needs.md#for-m6d10); a framework of their own if it fails | SlimeEngine's M6d.10 |
 | How vector shapes are drawn | by measurement: tessellated on the CPU, distance fields, or stencil then cover | the first stage's drawing |
 
@@ -264,6 +263,18 @@ of power.
   ([ADR-0223](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0223-styles-written-in-code-through-tokens.md)). A theme's or a style sheet's file changed is sent by `uwui dev` over its one connection,
   which relays `dx`'s patches, after an interval of 50 ms and a few milliseconds of the program's ([ADR-0224](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0224-a-files-change-reaches-the-application-through-the-development-tool.md),
   [measured](measurements.md#a-style-sheets-change-seen-2026-11-09)).
+- Layouts written as data in KDL 2.0: a screen's elements, their names, classes and literal texts,
+  the commands that a press runs and slots that code fills, no expression and no style; a named
+  element bound by the view's code through methods that a macro generates, the compiler checking
+  its names; a name keying its element, so that its state and its kept signals stay when an element
+  comes before it; a kind of component from another crate named by its prefix and registered by
+  that crate; a theme's parts written the same way, in a file of their own. A layout's change
+  sent by `uwui dev`, the view's function not run again
+  ([ADR-0225](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0225-layouts-written-in-kdl-reached-from-code-by-their-names.md),
+  [measured](measurements.md#a-layouts-change-seen-2026-11-09)). A reader of KDL of uwui's own,
+  its depth bounded and fuzzed, which writes a document back with its order, formatting and
+  comments kept; the official tests of KDL's specification put to the owner before they are
+  downloaded.
 - The core's own look, light, dark and of high contrast, in three densities; the official themes
   Glass, Material 3 Expressive and Pro, each a crate of its own in this repository with its own
   version, which the core never depends on ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).

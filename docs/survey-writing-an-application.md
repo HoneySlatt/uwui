@@ -179,6 +179,34 @@ export component HelloWorld inherits Window {
 Rust expressions, logic outside RSX and a component's signature need a build or a patch
 ([hot reload guide](https://dioxuslabs.com/learn/0.7/essentials/ui/hotreload/), 0.7).
 
+### Notations for trees, and code that reaches a file's elements
+
+Read on 2026-11-09 for SlimeEngine's M6d.1d2a, which chose the notation of layouts.
+
+- **KDL 2.0**, a document language of nodes with arguments, properties and children, final since
+  2024-12-22 ([kdl.dev](https://kdl.dev)). Its Rust reader `kdl` 6.7.1 (2026-05-31, Apache-2.0)
+  reads KDL 2, keeps a document's formatting and comments when it is changed and written back,
+  and has a `serde` that its changelog calls experimental; it depends on `miette`, `num-traits`
+  and `winnow` 0.7. tree-sitter-kdl 2.0.0 (2026-09-09) reads KDL 1 and 2; Neovim's pins it;
+  Helix's and Zed's grammars predate KDL 2; VS Code's `kdl-org.kdl` 2.1.3 reads KDL 2; `kdl-lsp`
+  gives diagnostics alone; `kdlfmt` formats. niri, through `knuffel`, and Zellij, through `kdl`
+  4.5, are on KDL 1. KDL 1 and 2 differ on keywords, `true` against `#true`, and on raw strings.
+  M6d.1d2a's prototype found that `kdl` 6.7.1 reads by recursion without a bound
+  ([measured](measurements.md#a-layouts-change-seen-2026-11-09)).
+- **TOML 1.1**, released on 2025-12-18, lets an inline table span lines with a trailing comma.
+  `toml` parses it from 0.9.10, `toml_edit` from 0.24.0. taplo's last release is 0.10.0
+  (2025-05-23); its author left the project in 2024, and an issue asking for TOML 1.1 was answered
+  "No" in 2026-01. tombi reads TOML 1.1 behind its `toml-version` option, 1.0 by default. TOML's
+  specification says that a table's pairs are "not guaranteed to be in any specific order".
+- **How code reaches a file's elements.** Android's View Binding generates a class for each
+  layout, its mismatches failing "at compile time rather than at runtime"; XAML's `x:Name` becomes
+  a field generated when the program is built; GTK's Blueprint compiles to GtkBuilder's XML, which
+  its README calls verbose, and gtk-rs's `#[template_child]` matches a template's ids by name;
+  Unity's UXML is XML, its elements found by `Q("name")` while the program runs; Qt's `.ui` files
+  become a structure of pointers through `uic`, and `findChild` finds a name while it runs; Slint
+  generates setters and callbacks for a component's top-level properties alone; Makepad finds
+  elements by `ids!` while it runs.
+
 ## 3. The three reloads
 
 A reload is three questions, answered apart
