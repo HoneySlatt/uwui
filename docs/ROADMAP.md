@@ -256,11 +256,13 @@ of power.
   the needs of the first stage's programs, tables among them; every component held to the same
   bar. A theme holds values, rules and, for any component it chooses, its parts: states reach them
   through rules, values that move as shares read when drawn, the application's content through
-  slots; a component without parts in its theme takes the core's ([ADR-0222](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0222-what-a-theme-is.md)).
+  slots; a component without parts in its theme takes the core's; a test kit renders each theme's
+  components in each state, density and direction, and checks their contracts ([ADR-0222](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0222-what-a-theme-is.md)).
 - Styles written in code: an element's own style, typed, with its states, naming the themes'
-  values by tokens; over the rules, under the user's density, contrast and size of text
+  values by tokens; over the rules' bases, under their states and the user's density, contrast
+  and size of text
   ([ADR-0223](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0223-styles-written-in-code-through-tokens.md)). A theme's or a style sheet's file changed is sent by `uwui dev` over its one connection,
-  which relays `dx`'s patches, and seen in milliseconds ([ADR-0224](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0224-a-files-change-reaches-the-application-through-the-development-tool.md),
+  which relays `dx`'s patches, after an interval of 50 ms and a few milliseconds of the program's ([ADR-0224](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0224-a-files-change-reaches-the-application-through-the-development-tool.md),
   [measured](measurements.md#a-style-sheets-change-seen-2026-11-09)).
 - The core's own look, light, dark and of high contrast, in three densities; the official themes
   Glass, Material 3 Expressive and Pro, each a crate of its own in this repository with its own

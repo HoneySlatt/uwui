@@ -8,8 +8,8 @@ Written for M6d.1a on 2026-11-06. Each later part of M6d.1 reads the sections it
 
 Each reference is read for what it brings, not on a full grid
 ([ADR-0199](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0199-uwuis-targets-tools-and-references-narrowed.md)).
-Every fact was read on 2026-11-06 in the reference's current documentation or source, and names
-its version. A fact that could not be checked in a primary source says so. Nothing here was built,
+Every fact was read on 2026-11-06 in the reference's current documentation or source, unless its
+section gives another date, and names its version. A fact that could not be checked in a primary source says so. Nothing here was built,
 run or measured: the figures quoted are the references' authors'.
 
 Update this file only to correct a fact, or to add a question that a later part of M6d.1 reads,
@@ -444,7 +444,7 @@ version named.
 | Reference | Values | Rules that select | The parts' tree changed by a theme |
 |---|---|---|---|
 | Qt Quick Controls 6.12.0 | a typed `palette`; an attached `Material` or `Universal` | none: one QML file per control | yes: a style is "a set of QML files within a single directory", each control's file rooted in its behaviour's type from `QtQuick.Templates`, its parts `background`, `contentItem`, `indicator` ([customizing](https://doc.qt.io/qt-6/qtquickcontrols-customize.html)) |
-| WPF, WinUI 3 | typed resources by key; WinUI's `ThemeResource` for light, dark and high contrast | `Style` by type or key, with triggers | yes: a `ControlTemplate` replaces the control's tree whole, under the parts that `TemplatePartAttribute` names (`PART_…`) ([WPF](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/creating-a-control-that-has-a-customizable-appearance)) |
+| WPF, WinUI 3 | typed resources by key; WinUI's `ThemeResource` for light, dark and high contrast | `Style` by type or key, with triggers | yes: a `ControlTemplate` replaces the control's tree whole, under the parts that `TemplatePartAttribute` names, `PART_EditableTextBox` for one ([WPF](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/creating-a-control-that-has-a-customizable-appearance)) |
 | Slint 1.18.1 | typed globals, `Palette` and `StyleMetrics` | none | yes, as each style re-implements each widget whole, behaviour and accessibility included (`internal/compiler/widgets/*/switch.slint`); styles chosen at build time, `fluent` by default |
 | Flutter 3.47.9 | typed `ThemeData`, `ThemeExtension` | none: each widget merges its theme's layers | no: another structure is another widget, `Switch.adaptive` choosing Material's or Cupertino's; both now packages of their own, `material_ui` and `cupertino_ui` |
 | Jetpack Compose, `androidx-main` | typed `CompositionLocal`s | none | no: a design system is a library of components; slots, as `Switch`'s `thumbContent`, are the one structural hook ([custom design systems](https://developer.android.com/develop/ui/compose/designsystems/custom)) |
@@ -468,7 +468,7 @@ What they hold for the contract between a component and the parts that a theme g
 - A style that owns the whole widget repeats its behaviour: Slint declares the switch's
   accessible role once in each style's file.
 - Themes drift from their framework's versions: Flutter moved Material and Cupertino out into
-  packages of their own, `material_ui` pinning the Flutter it runs on.
+  packages of their own, `material_ui` asking Flutter 3.47.0 at least.
 
 What it tells M6d.1d1: themes change a component's structure only where the parts' tree is data
 or code that the theme owns, under a contract of named parts that keeps behaviour and meaning on

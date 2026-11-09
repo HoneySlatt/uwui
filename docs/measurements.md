@@ -2259,14 +2259,18 @@ The prototype goes on from M6d.1c's, on the branch
 in `style_reload.rs`, thrown away once M6d.1 ends.
 
 - Machine: AMD Ryzen 7 5800X, 32 GB, Linux 7.3.1; at rest, but for other sessions' light work, a
-  load average of 1.1 to 2.3.
+  load average over one minute of 1.95 to 2.30.
 - Build: SlimeEngine's branch `m6d1c-bench` at `dbf86fc`, rustc 1.99.0. Release, and the `dev`
-  profile, without optimisation, as an author runs an application.
-- Command, inside SlimeEngine's `nix develop`: `cargo run --release -p slime-benches --
-  --prototypes --style --runs 21`, and the same without `--release`.
+  profile, without optimisation, as an author runs an application. The review's changes after it,
+  at `9e6cfa4`, add checks and touch no timed path.
+- Command, inside SlimeEngine's `nix develop`: `cargo build --release -p slime-benches`, then
+  `target/release/slime-benches --prototypes --style --runs 21` from `benches/`, and the same in
+  the `dev` profile.
 - Each time: the median of 21 runs, with their range, in milliseconds; a session's first change
   apart. Each run checks that its frame shows the new size with the scroll, the selection, the
-  field's text, the filter and the page kept: all 21 did, in each series.
+  field's text, the filter and the page kept: all 21 did, in each series. From `9e6cfa4`, each run
+  checks too that its frame ran no code of the application, and a test that the theme shown is
+  kept.
 
 ### From a change saved to the frame that shows it
 
@@ -2285,11 +2289,13 @@ in `style_reload.rs`, thrown away once M6d.1 ends.
 
 ### What they say
 
-- A style's change is seen far within the budget of a change seen, 2 s: some 3 ms in a release
-  build, 14 ms in an author's debug build. Rust's code takes some 1.7 s through `dx` at Slatty's
-  size ([above](#a-functions-body-reloaded-through-subsecond-2026-11-07)); Slint's interpreter,
-  0.31 s, and Dioxus's RSX, 0.04 s ([the rivals](#the-rivals-reloads-2026-11-07)), on a "Hello,
-  World!".
+- The program's part of a style's change is far within the budget of a change seen, 2 s: some
+  3 ms in a release build, 14 ms in an author's debug build, to the display list. The whole adds
+  the development tool's watcher, its interval of 50 ms and its connection, and a frame presented
+  ([ADR-0224](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0224-a-files-change-reaches-the-application-through-the-development-tool.md)),
+  measured when the tool is built. The rivals' figures, Slint's interpreter 0.31 s and Dioxus's RSX
+  0.04 s ([the rivals](#the-rivals-reloads-2026-11-07)), run from a save to a frame on the screen
+  through their own watchers: they compare with that whole, not with this part.
 - The program's part is the rules made again for each theme, then a frame that styles every element:
   the cost grows with the themes given and the elements shown.
 - The state is kept: a style's change runs no view.
