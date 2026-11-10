@@ -267,6 +267,9 @@ of power.
   through rules, values that move as shares read when drawn, the application's content through
   slots; a component without parts in its theme takes the core's; a test kit renders each theme's
   components in each state, density and direction, and checks their contracts ([ADR-0222](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0222-what-a-theme-is.md)).
+  Rules typed for each of a component's parts, and the part of a style that a theme adds, read by
+  Glass or Material 3 Expressive and attached to the look of each root
+  ([ADR-0229](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0229-styles-typed-as-declarations.md)).
 - Styles written in code: an element's own style, typed, with its states, naming the themes'
   values by tokens; over the rules' bases, under their states and the user's density, contrast
   and size of text
