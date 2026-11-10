@@ -292,7 +292,12 @@ of power.
   *Plain*, the core's parts in forced colours' roles, a designer's start; the system's preferences
   followed, light or dark, contrast and forced colours, less motion and transparency, the size of
   text and saving power, read by a crate of uwui's that the engine's platform layer calls too
-  ([ADR-0226](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0226-an-application-started-in-one-call-each-root-given-its-look.md)); the official themes
+  ([ADR-0226](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0226-an-application-started-in-one-call-each-root-given-its-look.md));
+  the roles that Plain and forced colours add, `canvas`, `button_text`, `link_text` and a color of
+  selected text, beside the seven that the components' defaults read, and the defaults of the
+  layers that the core's look styles by class today, the tooltip, the palette, the notifications
+  and the colour picker, once written as parts
+  ([ADR-0230](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0230-the-cores-roles-and-each-kinds-defaults.md)); the official themes
   Glass, Material 3 Expressive and Pro, each a crate of its own in this repository with its own
   version, which the core never depends on ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
 - What differs between platforms and an application needs, in uwui: files and settings, the network,
