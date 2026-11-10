@@ -90,7 +90,10 @@ So that the files differ by their model alone, they share what is not the state 
 - A root's theme by its name.
 - Each frame's time, set before the frame's input is handled: an input at rest starts a frame.
   The control reads it in `advance`, signals in `frame_time`, views in `Cx::frame_time`, messages
-  in `update`.
+  in `update`. SlimeEngine's
+  [ADR-0227](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0227-the-time-that-motion-reads.md)
+  later replaced the signal `frame_time` with `now`, `shown_at`, `next_frame` and motion read when
+  drawn; the code here stays as the models were compared.
 - A key art's fade written in the style sheet: `enter`, what an element shows as it appears, from
   which its transition starts. No such part of a style exists yet. The fade is the same in the
   four; only the wave tests motion that the model drives.

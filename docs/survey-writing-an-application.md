@@ -420,8 +420,80 @@ platform" (std's `sys/time/unsupported.rs`, read on Rust's `master`); on WASI it
 it on the web.
 
 What it tells M6d.1d2b: a future time of presentation exists on Apple and on Android from API 33,
-a past one on Wayland and Windows, none on the web; X11's Present extension was not read. Neither winit nor wgpu passes any on,
+a past one on Wayland and Windows, none on the web. Neither winit nor wgpu passes any on,
 so uwui's hosts read them with code of their own.
+
+### More of a frame's time, of power and of clocks
+
+Read on 2026-11-09 for SlimeEngine's M6d.1d2b2, in each platform's current documentation or, where
+said, its code. Nothing was run.
+
+- **X11's Present extension.** `PresentCompleteNotify` gives `ust` and `msc`, "the frame count and
+  system time when the presentation actually occurred": a past time
+  ([`presentproto.txt`](https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/raw/master/presentproto.txt),
+  version 1.4). A future time is asked, never given: `PresentPixmap`'s `target-msc`, `divisor` and
+  `remainder`; its option of a time in `ust`, Mesa says, "xserver does not implement it at all".
+  - `ust`'s clock and unit are not in the protocol. In the X server's and Mesa's code they are
+    microseconds of `CLOCK_MONOTONIC`.
+  - Xwayland implements Present without Wayland's `wp_presentation`: at each frame callback it adds
+    one to `msc` and sets `ust` to the time now (`xwayland-present.c`), so its `ust` is when the
+    callback came, not when the image showed.
+  - Input: the core protocol's times are milliseconds that "wrap around (after about 49.7 days)";
+    XInput2's too. The X server reads them from `CLOCK_MONOTONIC` (its code); no text ties them to
+    `ust`.
+- **Android.** No method `getAnimationTimeNanos` exists: `FrameData.getFrameTimeNanos`'s page links
+  to one that the API lacks
+  ([`FrameData`](https://developer.android.com/reference/android/view/Choreographer.FrameData)).
+  `FrameTimeline` (API 33) gives `getDeadlineNanos()`, "which this frame needs to be ready by",
+  beside the expected presentation time. A past presentation exists from API 35:
+  `SurfaceControl.TransactionStats.getPresentFence()`, a fence whose `getSignalTime()` is in
+  `CLOCK_MONOTONIC`; the NDK's `ASurfaceTransactionStats_getPresentFenceFd` from API 29. A time is
+  asked through `setDesiredPresentTimeNanos` (API 35; the NDK's from 29). A surface asks for a rate
+  through `Surface.setFrameRate` (API 30), which "won't introduce frame rate throttling", and a view
+  through `View.setRequestedFrameRate` (API 35); with the adaptive refresh rate of Android 15 QPR1,
+  the rate is "the highest vote".
+- **Windows' presentation manager** (`presentation.h`, build 22000). Its statistics are of three
+  kinds: a present's status (queued, skipped, cancelled) and a composition frame's, with no time;
+  and an independent flip's, `GetDisplayedTime()` and `GetPresentDuration()`, in the system's
+  interrupt time, 100 ns since the start. `SetTargetTime` asks: "The system will attempt to display
+  the present as close to the specified time as possible." How interrupt time converts to the
+  performance counter is not documented. DXGI's `SetMaximumFrameLatency`, on a swap chain made with its waitable object, sets the frames
+  queued, 1 by default; no count of frames in flight is given.
+- **Apple's rate.** `CADisplayLink.preferredFrameRateRange`, iOS 15 and macOS 14, "a range of
+  frequencies your app allows", best effort; "the system disables faster refresh rates in low power
+  mode or if a device gets hot".
+
+| Platform | Saving power | On battery | Its change |
+|---|---|---|---|
+| Windows | `PowerManager.EnergySaverStatus` (10240); effective power mode notifications (1809) | `SYSTEM_POWER_STATUS.ACLineStatus` | `EnergySaverStatusChanged`; `GUID_POWER_SAVING_STATUS` |
+| macOS, iOS | `ProcessInfo.isLowPowerModeEnabled` (iOS 9, macOS 12) | IOKit's power sources on macOS; `UIDevice`'s battery state on iOS | `NSProcessInfoPowerStateDidChange` |
+| Android | `PowerManager.isPowerSaveMode()` (API 21) | `BatteryManager.isCharging()` (API 23) | `ACTION_POWER_SAVE_MODE_CHANGED`, to receivers registered |
+| Linux | the portal's `PowerProfileMonitor`, `power-saver-enabled` (portal 1.10.0) | UPower's `OnBattery` | not named on the pages read |
+| The web | none | `getBattery()`: Chrome; Firefox only from 43 to 52; Safari none | — |
+
+WebKit halves `requestAnimationFrame` to 30 a second in Low Power Mode, by its code
+(`AnimationFrameRate.cpp`), not its documentation.
+
+| Clock | Counts a suspend |
+|---|---|
+| Linux's `CLOCK_MONOTONIC` / `CLOCK_BOOTTIME` ([`clock_gettime(2)`](https://man7.org/linux/man-pages/man2/clock_gettime.2.html)) | no / yes |
+| Windows' performance counter / unbiased interrupt time | yes / no |
+| Apple's `mach_absolute_time` / `mach_continuous_time` | no / yes |
+| Android's `uptimeMillis()` / `elapsedRealtime()` | no / yes |
+| The web's `performance.now()` | not specified; Windows' browsers only, by MDN |
+| Rust's `std::time::Instant` | not specified: `CLOCK_MONOTONIC` on Linux and `CLOCK_UPTIME_RAW` on macOS, no; the performance counter on Windows, yes |
+
+Civil time: `std::time::SystemTime::now()`, as `Instant::now()`, panics on
+`wasm32-unknown-unknown`. The system tells a program that its clock changed on Windows
+(`WM_TIMECHANGE`), Linux (`timerfd` with `TFD_TIMER_CANCEL_ON_SET`, which systemd's `timedate1`
+names for it), Apple (`NSSystemClockDidChange`) and Android (`ACTION_TIME_CHANGED`); that its zone
+changed on Linux (`timedate1`'s `Timezone`), Apple (`NSSystemTimeZoneDidChange`) and Android
+(`ACTION_TIMEZONE_CHANGED`), not documented on Windows; the web has no such event, and reads its
+zone from `Intl.DateTimeFormat().resolvedOptions().timeZone`.
+
+What it tells M6d.1d2b2: X11 gives a past presentation's time as Wayland and Windows do, Xwayland
+none; Android adds a past one from API 35. The clocks that platforms give for frames and input stop
+during a suspend, except Windows'. A power-saving state exists everywhere but the web.
 
 ## 6. An application started in one call
 
@@ -551,12 +623,15 @@ platform gives the others by its own means, with gaps: Linux's portal holds neit
 text nor less transparency, KDE's no contrast, macOS and the web no size of text, Safari no less
 transparency; Android's less transparency was not searched.
 
+Saving power and running on battery, read for M6d.1d2b2, are in
+["More of a frame's time, of power and of clocks"](#more-of-a-frames-time-of-power-and-of-clocks).
+
 ## What stays open
 
-- Not read: X11's Present extension, for a frame's time. Not checked in a primary source: whether
-  Apple's `CADisplayLink.timestamp` and `NSEvent.timestamp` share a clock; which statistics Windows'
-  presentation manager gives a swap chain (its page was missing); where KDE keeps its fonts' DPI;
-  the sources of saving power on each platform.
+- Not checked in a primary source: whether Apple's `CADisplayLink.timestamp` and
+  `NSEvent.timestamp` share a clock; the clock of X11's `ust`, read only in code; how Xwayland times
+  X11's input; how Windows' interrupt time converts to its performance counter; where KDE keeps its
+  fonts' DPI; whether Windows and Android cap the display's rate while saving power.
 - Floem's WebGPU support is "highly experimental" (`examples/webgpu/README.md`, `main`); it has no
   Android port, its maintainer citing no time for one
   ([issue #619](https://github.com/lapce/floem/issues/619), open).

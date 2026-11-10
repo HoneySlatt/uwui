@@ -242,8 +242,10 @@ of power.
   a list fed by its changes by key, signals fed by a state outside uwui in batches, and a timer
   at the granularity that it shows.
 - The interface's tasks on an executor of uwui's own, each owned by the scope that started it and
-  cancelled with it, its timers on the frame's clock, whose next deadline the host waits for:
-  no thread of uwui's for them. Other threads change signals through a channel that a task of the
+  cancelled with it, its timers on their root's clock, whose next deadline the host waits for and
+  meets at a wake that runs tasks and draws nothing, a task woken outside a frame too, so that a
+  hidden window's timers end
+  ([ADR-0227](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0227-the-time-that-motion-reads.md)): no thread of uwui's for them. Other threads change signals through a channel that a task of the
   view receives, a burst taken whole in the next frame; a channel made outside the view outlives
   a reload
   ([ADR-0211](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0211-the-executor-and-other-threads-through-channels.md),
@@ -312,6 +314,15 @@ of power.
   scrolling and by gestures, interrupted without a jump, an element that becomes another, variable
   fonts whose axes move; a rate capped for each animation, effects stopped while the window has
   lost the focus, nothing drawn at rest.
+- The time that motion reads ([ADR-0227](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0227-the-time-that-motion-reads.md)): each window's frame read at when it shows, given,
+  predicted, asked, ready under a variable refresh, on the display's grid or simulated, never back; motion placed by its formula,
+  no cap after a late frame; one clock of the host's that counts a suspend, and two types,
+  `Instant` and `RootTime`; each root's time and speed, the application's motion and timers
+  following it, hover, press, focus and uwui's own timings on the host's clock, a pause menu a root of its own; input's events in the
+  host's clock, a fling starting at its input, a transition at its first frame; a motion asking for
+  a frame when its drawing changes visibly, under a cap of one frame in n refreshes, halved for
+  lasting motion while saving power; `now`, `shown_at` and `next_frame` in place of a signal of the
+  frame's time; the civil time, its zone and offset, through the timer at a granularity.
 - Text styled by ranges, masked fields, double clicks, the pointer's shapes, smooth and sideways
   scrolling, virtual lists that scroll sideways, a table's header that stays; gamepads.
 - Four programs, outside this repository, before the API is declared stable, each with a
