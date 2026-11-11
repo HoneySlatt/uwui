@@ -291,17 +291,22 @@ of power.
   Glass or Material 3 Expressive and attached to the look of each root
   ([ADR-0229](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0229-styles-typed-as-declarations.md)).
 - Styles written in code: an element's own style, typed, with its states, naming the themes'
-  values by tokens; over the rules' bases, under their states and the user's density, contrast
-  and size of text
-  ([ADR-0223](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0223-styles-written-in-code-through-tokens.md)).
+  values by tokens; over the rules' bases, under their states and the user's size of text;
+  density and contrast reaching them by the themes' names alone, a number written in code staying
+  the author's
+  ([ADR-0223](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0223-styles-written-in-code-through-tokens.md),
+  [ADR-0237](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0237-the-users-text-size-and-less-motion-density-and-contrast-by-names.md)).
   Built in the engine before the move: the declarations that code writes, with their states, in
   the mask order, a rule's state over a base written in code, a hover or a press that never
   changes the box, the place of each call kept
   ([ADR-0231](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0231-an-elements-own-style-written-in-code.md));
   transitions that move every colour that a style holds, from the derive's list, elements that
   move alike sharing the style shown, the frame after a change of theme and each frame of its
-  transition within targets of allocations; the user's layer next, then the tokens
-  ([ADR-0232](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0232-transitions-read-the-derives-colours-and-share-what-they-show.md)). A theme's or a style sheet's file changed is sent by `uwui dev` over its one connection,
+  transition within targets of allocations
+  ([ADR-0232](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0232-transitions-read-the-derives-colours-and-share-what-they-show.md));
+  the user's size of text, a curve of stops, over every text but icons and a list's rows, given
+  with less motion as the user's preferences, the frame after its change within a target of
+  allocations ([ADR-0237](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0237-the-users-text-size-and-less-motion-density-and-contrast-by-names.md)); the tokens next. A theme's or a style sheet's file changed is sent by `uwui dev` over its one connection,
   which relays `dx`'s patches, after an interval of 50 ms and a few milliseconds of the program's ([ADR-0224](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0224-a-files-change-reaches-the-application-through-the-development-tool.md),
   [measured](measurements.md#a-style-sheets-change-seen-2026-11-09)).
 - Layouts written as data in KDL 2.0: a screen's elements, their names, classes and literal texts,
@@ -321,6 +326,12 @@ of power.
   followed, light or dark, contrast and forced colours, less motion and transparency, the size of
   text and saving power, read by a crate of uwui's that the engine's platform layer calls too
   ([ADR-0226](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0226-an-application-started-in-one-call-each-root-given-its-look.md));
+  the look a value whose sets, high contrast in light and in dark among them, the interface
+  chooses from the user's preferences, which gain light or dark, contrast, forced colours and less
+  transparency; under forced colours, the colours that code writes giving way by property, each
+  to the role that pairs with it, with an opt-out for content that the elements below inherit; the
+  couch density scaling the root, a theme giving its named values; the themes' test kit rendering
+  every look at 200 % text ([ADR-0237](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0237-the-users-text-size-and-less-motion-density-and-contrast-by-names.md));
   the roles that Plain and forced colours add, `canvas`, `button_text`, `link_text` and a color of
   selected text, beside the seven that the components' defaults read, and the defaults of the
   layers that the core's look styles by class today, the tooltip, the palette, the notifications
