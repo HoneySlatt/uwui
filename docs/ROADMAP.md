@@ -296,8 +296,12 @@ of power.
   ([ADR-0223](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0223-styles-written-in-code-through-tokens.md)).
   Built in the engine before the move: the declarations that code writes, with their states, in
   the mask order, a rule's state over a base written in code, a hover or a press that never
-  changes the box, the place of each call kept; the tokens and the user's layer next
-  ([ADR-0231](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0231-an-elements-own-style-written-in-code.md)). A theme's or a style sheet's file changed is sent by `uwui dev` over its one connection,
+  changes the box, the place of each call kept
+  ([ADR-0231](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0231-an-elements-own-style-written-in-code.md));
+  transitions that move every colour that a style holds, from the derive's list, elements that
+  move alike sharing the style shown, the frame after a change of theme and each frame of its
+  transition within targets of allocations; the user's layer next, then the tokens
+  ([ADR-0232](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0232-transitions-read-the-derives-colours-and-share-what-they-show.md)). A theme's or a style sheet's file changed is sent by `uwui dev` over its one connection,
   which relays `dx`'s patches, after an interval of 50 ms and a few milliseconds of the program's ([ADR-0224](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0224-a-files-change-reaches-the-application-through-the-development-tool.md),
   [measured](measurements.md#a-style-sheets-change-seen-2026-11-09)).
 - Layouts written as data in KDL 2.0: a screen's elements, their names, classes and literal texts,
