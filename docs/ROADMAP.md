@@ -306,7 +306,15 @@ of power.
   ([ADR-0232](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0232-transitions-read-the-derives-colours-and-share-what-they-show.md));
   the user's size of text, a curve of stops, over every text but icons and a list's rows, given
   with less motion as the user's preferences, the frame after its change within a target of
-  allocations ([ADR-0237](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0237-the-users-text-size-and-less-motion-density-and-contrast-by-names.md)); the tokens next. A theme's or a style sheet's file changed is sent by `uwui dev` over its one connection,
+  allocations ([ADR-0237](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0237-the-users-text-size-and-less-motion-density-and-contrast-by-names.md));
+  tokens, the themes' values named in code by four kinds, a colour, a length, a duration and a
+  number, each crate's list declared to the interface, which reads each token in its kind when it
+  takes its themes, the core's roles among them
+  ([ADR-0238](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0238-tokens-typed-named-in-code-declared-by-each-crate.md)). Built here: the look's own tokens, its spacings, radii, sizes of text,
+  durations and colours, declared by the look as a value; under forced colours, which leaves of a
+  rule named a role, recorded as the sheets are read; less transparency through a set of values
+  by their names, as contrast; a style's reload through `uwui dev` timed again, a token that it
+  adds read at the next taking of the themes ([ADR-0238](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0238-tokens-typed-named-in-code-declared-by-each-crate.md)). A theme's or a style sheet's file changed is sent by `uwui dev` over its one connection,
   which relays `dx`'s patches, after an interval of 50 ms and a few milliseconds of the program's ([ADR-0224](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0224-a-files-change-reaches-the-application-through-the-development-tool.md),
   [measured](measurements.md#a-style-sheets-change-seen-2026-11-09)).
 - Layouts written as data in KDL 2.0: a screen's elements, their names, classes and literal texts,
