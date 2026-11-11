@@ -2408,3 +2408,23 @@ tokenizer merges them; *unquoted*, the words without the double quotes.
   XML 1.7 to 2.2.
 - A file's tokens are not an agent's: whether agents write a notation well, at once and in few
   tries, is the agent bench's to measure.
+
+## The package for the web, a first probe (2026-11-11)
+
+A probe of SlimeEngine's M6d.3b1, before the reader of themes moved to KDL: uwui's core built for
+`wasm32-unknown-unknown`, a label and a button laid out and drawn, nothing read, then the same with
+a style sheet and a theme read through reflection. A release build, `opt-level = "z"`, fat LTO, one
+unit of code, `panic = "abort"`, stripped, without `wasm-opt`; built with nixpkgs' rustc 1.99.0 and
+the development shell's linker, not the project's toolchain, which lacks the target. Sizes in bytes:
+
+| Module | Raw | gzip -9 | zstd -19 | xz -9e |
+|---|---|---|---|---|
+| `uwui-kdl` alone, every entry walked | 73 335 | 37 556 | 35 471 | 33 744 |
+| uwui's core, nothing read | 4 559 559 | 2 757 208 | 2 516 902 | 2 322 144 |
+| the same, a sheet and a theme read | 4 816 073 | 2 849 324 | 2 593 018 | 2 391 008 |
+
+- uwui's core alone is some 2.3 MB compressed by xz, against the [budget](ROADMAP.md) of 1 MB
+  compressed by brotli, fonts apart, before any document is read: 3.4 MB of its 4.6 MB is data,
+  its crate not found, the scripts of `parley` the first suspect.
+- Brotli was not available: xz stands in for it. SlimeEngine's M6d.3b2 measures again with the
+  project's toolchain and brotli; the web's trial confirms or corrects the budget.
