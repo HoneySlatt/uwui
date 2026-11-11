@@ -325,10 +325,15 @@ of power.
   that crate; a theme's parts written the same way, in a file of their own. A layout's change
   sent by `uwui dev`, the view's function not run again
   ([ADR-0225](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0225-layouts-written-in-kdl-reached-from-code-by-their-names.md),
-  [measured](measurements.md#a-layouts-change-seen-2026-11-09)). A reader of KDL of uwui's own,
-  its depth bounded and fuzzed, which writes a document back with its order, formatting and
-  comments kept; the official tests of KDL's specification put to the owner before they are
-  downloaded.
+  [measured](measurements.md#a-layouts-change-seen-2026-11-09)). Every document of uwui in KDL,
+  layouts, a theme's parts, values and rules, shortcuts and docks' layouts, read by uwui's own
+  reader, which its Stage 6d builds: without recursion, its size, depth and count of items bounded,
+  checked against KDL's official tests, its errors at their line and column; a theme's values in
+  groups of their kinds; the cooked form a document's text
+  ([ADR-0241](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0241-every-document-of-uwui-in-kdl-read-by-its-own-reader.md)).
+  Built here: the reader fuzzed under guidance of coverage in CI; a document written back with
+  its order, formatting and comments kept, by edits at its spans; colours outside sRGB, as
+  functions; a token of text once something reads one.
 - The core's own look, light, dark and of high contrast, in three densities, and its variant
   *Plain*, the core's parts in forced colours' roles, a designer's start; the system's preferences
   followed, light or dark, contrast and forced colours, less motion and transparency, the size of
