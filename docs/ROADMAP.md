@@ -11,9 +11,11 @@ Update this file when a stage is reshaped, a budget changes, or an open decision
 ## 1. What uwui is
 
 A UI framework in Rust, GPU-rendered, for the desktop, Linux, Windows and macOS, Android phones
-and the web, under MIT OR Apache-2.0
+and televisions, and the web; iOS once a project of the owner's is accepted by Apple, tvOS after a
+trial; under MIT OR Apache-2.0
 ([ADR-0181](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0181-uwuis-scope.md),
-[ADR-0190](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0190-uwuis-requirements.md)).
+[ADR-0190](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0190-uwuis-requirements.md),
+[ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)).
 
 - The base of its owner's applications, and of the editor and games of SlimeEngine, which
   depends on uwui, never the reverse; not of the owner's desktop, its shell, its login and lock
@@ -147,6 +149,11 @@ Zed's file, Zed itself:
 - The web: both of them in a browser, Chrome and Firefox on the laptop, Chrome on the phone, the
   first load over Chrome's "slow 4G" profile.
 - The handheld tier: the owner's Steam Deck.
+- Televisions: a Xiaomi TV Box S of the third generation (Amlogic, 2 GB, a Mali-G310, Google TV),
+  the lowest box supported, not yet at hand; the owner's Apple TV 4K of 2022 (A15) for tvOS
+  ([ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)).
+- Apple's: a Mac with Apple's chips checks macOS and builds for iOS and tvOS; none is at hand, and
+  macOS's checks by hand are debt until one is ([ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)).
 
 ### Budgets
 
@@ -161,7 +168,7 @@ A budget missed is debt until it is met. No application runs on uwui yet: none i
 | The package for the web | at most 1 MB of WebAssembly compressed with brotli, fonts apart; provisional until the web's trial ([ADR-0181](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0181-uwuis-scope.md)) | the web's trial |
 | Power | each effect at rest and in motion, the GPU's and the CPU's, on the owner's machine and on a modest one ([ADR-0171](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0171-effects-of-the-interface.md)); its figure from the lead, below | decided with the effects |
 | The lead | on each machine and screen, a program's *own cost*, what it adds above a *blank window* that only clears and presents, is at most a third of the best rival's: memory, the start, the processor, power, a frame's time and the package's size; at rest and from input to present, the blank window's figure ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)) | the blank window measured beside each screen, from SlimeEngine's M6d.7 |
-| Porting | an application on uwui's APIs alone runs on Linux, Windows, macOS and the web with no line written for one platform; on Android and iOS, only its package's configuration and permissions differ; provisional until the trials of Android, the web and iOS ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)) | the small application of 1.0 on each platform: its lines for that platform, the steps from `uwui new` to a package installed, the package's size, against Electron, Tauri, Flutter, GPUI and Compose Multiplatform |
+| Porting | an application on uwui's APIs alone runs on Linux, Windows, macOS and the web with no line written for one platform; on Android and iOS, only its package's configuration and permissions differ; a couch screen's lines counted apart, as a form factor's ([ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)); provisional until the trials of Android, the web and iOS ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)) | the small application of 1.0 on each platform: its lines for that platform, the steps from `uwui new` to a package installed, the package's size, against Electron, Tauri, Flutter, GPUI and Compose Multiplatform |
 | Input to photon | timed by a light sensor on the screen, so that the rivals compare from outside ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)) | the light sensor's bench, from SlimeEngine's Stage 6e |
 | Compiling | SlimeEngine's budgets of compiling, applied to an application on uwui; their figures for an application weighed at SlimeEngine's M6d.10 ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md), [ADR-0220](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0220-the-roadmap-reshaped-by-the-market.md)) | at each milestone, on the high tier |
 | Hours without a crash | at least 99.9 % of an application's hours of use without a crash, no work lost after one ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)) | the hours and crashes counted on the machine |
@@ -181,14 +188,24 @@ until its milestone M6d.10 decides their home.
   Xvfb, and on Windows by hand
   ([ADR-0195](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0195-a-series-of-headless-compositors.md)).
 - Variable refresh rates, checked by hand: no headless compositor emulates them.
-- macOS aimed at for 1.0, as Linux and Windows: built and tested in CI, checked by hand in a virtual
-  machine, macOS 26 on Intel with an AMD GPU, and on a Mac with Apple's chips when one is at hand;
-  the documentation names the last check on Apple's chips and its date, or says that none was made
+- macOS aimed at for 1.0, as Linux and Windows: built and tested in CI on Apple's chips, checked by
+  hand on a Mac with Apple's chips, never in a virtual machine; the documentation names the last
+  check by hand and its date, or says that none was made
   ([ADR-0173](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0173-the-platforms-of-applications.md),
   [ADR-0196](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0196-checks-by-hand-on-macos.md),
-  [ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
-- iOS out of 1.0's targets: a trial on Xcode's simulator; frame times, power, touch and VoiceOver on
-  an iPhone are debt until one is at hand ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
+  [ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md),
+  [ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)).
+- iOS a target of 1.0 once a minimal build of Aerith passes Apple's review for TestFlight; until
+  then, a trial on Xcode's simulator. iOS 17 at least; frame times, power, touch and VoiceOver on an
+  iPhone before 1.0; iPadOS's stylus, pointer and windows debt ([ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)).
+- Android TV aimed at for 1.0, Google's quality checklist for TV apps met: the D-pad, Back and the
+  media keys, the screen kept on while a video plays, TalkBack driven by the D-pad, 32-bit builds,
+  the memory of low-memory boxes ([ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)).
+- tvOS built in CI from the move; a trial after the first stage decides whether it is a target of
+  1.0 or after ([ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)).
+- Colour: one way to blend, in sRGB's encoding, on every target; SDR white at 1.0, the display's
+  headroom applied at the end; a colour description on every surface, image and plane; floats
+  only while content asks ([ADR-0234](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0234-uwuis-colour-model-before-its-api-is-stable.md)).
 - Blind tests by people: an application's captures compared with its rivals' without knowing which
   is which ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)).
 - No look imposed: `uwui new` asks which look, uwui's own, Plain, Glass, Material 3 Expressive or
@@ -208,6 +225,9 @@ until its milestone M6d.10 decides their home.
 |---|---|---|
 | Games' interfaces, HUD, inventories, dialogues and interfaces within the world | uwui's core with a layer of the engine's, the direction that [SlimeEngine's ADR-0209](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0209-platforms-the-editor-and-agents.md) takes, confirmed by a measure of *Hunna Wood*'s HUD and a menu driven by a gamepad, [as the engine proposes it](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/uwui-needs.md#for-m6d10); a framework of their own if it fails | SlimeEngine's M6d.10 |
 | How vector shapes are drawn | by measurement: tessellated on the CPU, distance fields, or stencil then cover | the first stage's drawing |
+| iOS a target of 1.0 | yes, if a minimal build of Aerith passes Apple's review for TestFlight; a trial alone otherwise ([ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)) | Aerith's review |
+| tvOS a target of 1.0, or after it | its focus mirrored to the system's focus engine; App Review's verdict on an interface drawn by the application ([ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)) | the tvOS trial's report, after the first stage |
+| Glass over a plane that uwui cannot read on Apple's platforms | the system's glass as one step of the fallback, taken by the owner; the steps' order with uwui's own ([ADR-0235](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0235-content-from-outside-the-tree.md)) | the whole element, after the first stage |
 
 ## 4. Stages
 
@@ -311,10 +331,24 @@ of power.
   focus for the keyboard, accessibility and gamepads.
 - Fonts given as bytes and loaded when a text first needs them, with a fallback for each writing
   system, for Android and the web.
-- Three bounded trials, thrown away, before the API is declared stable, each with its report:
-  Android, in a Kotlin activity; the web, in a canvas; then iOS, in two milestones, in a UIKit view
-  on Xcode's simulator: the surface lost and made again, rotation, the system's keyboard with
-  composition, iOS's scrolling, suspend and resume, a first try of VoiceOver ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
+- Four bounded trials, thrown away, before the API is declared stable, each with its report:
+  Android, in a Kotlin activity, with a third milestone on the television box; the web, in a
+  canvas; right after the first material of glass, content from outside the tree, shared by Aerith
+  and Magnolia: a child process's surface on Linux with its input and focus, an HDR plane under an
+  SDR interface on KWin or Mutter, Media3 in a `SurfaceView` on the Pixel, Aerith's player screen
+  measured against mpv, Stremio, Jellyfin's desktop client and Kodi ([ADR-0236](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0236-one-trial-of-content-from-outside-for-aerith-and-magnolia.md)); then iOS, in two
+  milestones, through uwui's own UIKit host on a Mac with Apple's chips, bought before it starts:
+  the surface lost and made again, rotation, the system's keyboard with composition, iOS's
+  scrolling, suspend and resume, a first try of VoiceOver through `accesskit_ios`, and on paper how
+  uwui's focus maps onto tvOS's focus engine ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md), [ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)).
+- The colour model, before the API is declared stable: the interface blending in sRGB's encoding on
+  every target, floats included; 1.0 as SDR white, the display's headroom read live and applied
+  once at the end; an extensible colour description, on Wayland's model, on every surface, image
+  and plane; the output's description from the host where wgpu gives none; a window in floats only
+  while it shows content beyond SDR; the themes' colours and tagged images in wide gamuts; glass
+  over HDR content brought down to SDR white ([ADR-0234](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0234-uwuis-colour-model-before-its-api-is-stable.md)).
+- The foundations of content from outside the tree: a transparent surface over a plane, layers of
+  the platform in the host's API, their colour descriptions ([ADR-0235](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0235-content-from-outside-the-tree.md)).
 - Images read from files and the network, decoded away from the interface's thread, in a cache
   bounded by memory that frees the GPU's; cropped to cover, cross-faded, textures updated at each
   frame.
@@ -342,8 +376,8 @@ of power.
   measured first, the music player on the desktop and its Android prototype, measured against
   Jetpack Compose, and the launcher Slatty; and the native client of Pluto, the owner's harness of
   agents, today on egui, its bar taken from its interview and the market when it is designed. The
-  DAW, Magnolia, comes later, a client of uwui after this stage, its needs checked by the choices
-  meanwhile
+  DAW, Magnolia, and the media client, Aerith, come later, clients of uwui after this stage, their
+  needs checked by the choices meanwhile and by the trial of content from outside
   ([ADR-0198](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0198-screens-of-reference-and-the-rivals-measured.md),
   [ADR-0206](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0206-slatty-ported-again-the-daw-later.md)).
 
@@ -362,8 +396,14 @@ each effect, at rest and in motion.
   each a crate of its own.
 - The system's integrations in a crate of their own; whole Android applications without Kotlin;
   web applications installed and offline, and uwui embedded in a page.
-- Video decoded by the GPU, HDR, AVIF, JPEG XL, HEIC and Lottie; the renderer on the CPU, measured
-  on the lowest machines.
+- The element for content from outside the tree: a plane by default, composed by uwui while an
+  effect needs its frames, in step with the interface where the platform allows it, input, focus
+  and accessibility forwarded, a budget of live planes, its API experimental until Aerith or
+  Magnolia ships on it; frames decoded by the GPU shown without a copy, the player staying the
+  application's ([ADR-0235](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0235-content-from-outside-the-tree.md)). HDR images, gain maps applied at the live headroom ([ADR-0234](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0234-uwuis-colour-model-before-its-api-is-stable.md)); AVIF, JPEG
+  XL, HEIC and Lottie; the renderer on the CPU, measured on the lowest machines.
+- The tvOS trial, two milestones on the owner's Apple TV, if Aerith passes Apple's review for tvOS
+  ([ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)).
 - Extensions in WebAssembly; settings, the window's state and undo for applications; translation
   through Fluent.
 - `uwui new`, `run`, `dev`, `bundle` and `doctor`, `bundle` delegating to the tools that make
@@ -375,7 +415,8 @@ each effect, at rest and in motion.
   notarized, under an Apple developer account ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
 - WCAG 2.2 at level AA, checked; the same small application, whole, written with each rival and
   with uwui, measured on the owner's machines, built and run on Linux, Windows, macOS, the web,
-  Android and iOS's simulator; CI building uwui's examples for every target at each push
+  Android and iOS's simulator; CI building uwui's examples for every target at each push, Apple's
+  each night
   ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
 - The gallery of the market's mock-ups.
 - The agent bench at each release; documentation written for agents, a compact reference and a

@@ -4,9 +4,10 @@
 
 # uwui
 
-uwui is a UI framework in Rust, drawn by the GPU, for the desktop, Android phones and the web. It is
-embedded in a host that calls it, runs without a window or a GPU when tested, looks the same on
-every platform, and is read and driven by agents. It is the base of the interfaces of
+uwui is a UI framework in Rust, drawn by the GPU, for the desktop, Android phones and
+televisions, and the web; iOS and tvOS are planned. It is embedded in a host that calls it, runs
+without a window or a GPU when tested, looks the same on every platform, and is read and driven by
+agents. It is the base of the interfaces of
 [SlimeEngine](https://github.com/HoneySlatt/SlimeEngine), its editor and games, and of applications.
 
 ## State
