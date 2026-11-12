@@ -2488,3 +2488,16 @@ screen and the game's menu at 3840 × 2160, each item's bytes now laid out in pl
 the door pays some 65 µs for its encoder, its submission and one check of the device. Its tests
 draw on a bare device, its requests read with a waker that does nothing. The figures are in
 [SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d4b1b-the-canvas-on-wgpu).
+
+## Reflection out (2026-11-12)
+
+SlimeEngine's M6d.3c3 took the engine's reflection out of uwui: it depends on neither
+`slime-reflect` nor `slime-serialize`, which the engine's checks keep out of its tree on every
+target, and `slime-color` depends on nothing, its colour described to the engine's reflection by
+the engine itself
+([ADR-0241](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0241-every-document-of-uwui-in-kdl-read-by-its-own-reader.md)).
+The verdicts of the reflected readers that its readers of KDL replaced are kept as fixtures, read
+again at each test. On an AMD Ryzen 7 5800X at rest, `uwui` compiles again in 0.85 s, from 0.93 s,
+and a dock's layout of the size of the editor's reads and fits its panels in 9.4 µs, from 76 µs
+through reflection. The figures are in
+[SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d3c3-reflection-out-of-uwui).
