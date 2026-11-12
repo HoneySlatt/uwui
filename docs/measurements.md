@@ -2476,3 +2476,15 @@ The `widgets` example, built alone by `scripts/uwui-program.sh`, no longer compi
 development channel, its release binary is 18.8 MB, within the budget of 20 MB, where it was
 19.7 MB. The canvas's GPU time did not change. The figures are in
 [SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d4b1a-the-canvas-moved-into-uwui-render).
+
+## The canvas on its host's device (2026-11-12)
+
+SlimeEngine's M6d.4b1b put `uwui-render` on wgpu: it draws with its host's device, its queue and
+an encoder that the host submits, and names no crate of the engine but `slime-color`; the engine
+lends its device through a guarded door
+([ADR-0244](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0244-the-engine-lends-its-device-through-a-guarded-door.md)).
+The canvas's images and its GPU time did not change. Its CPU fell by some 40 % on the editor's
+screen and the game's menu at 3840 × 2160, each item's bytes now laid out in place; a draw through
+the door pays some 65 µs for its encoder, its submission and one check of the device. Its tests
+draw on a bare device, its requests read with a waker that does nothing. The figures are in
+[SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d4b1b-the-canvas-on-wgpu).
