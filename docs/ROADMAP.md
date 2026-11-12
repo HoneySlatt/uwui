@@ -241,7 +241,10 @@ until its milestone M6d.10 decides their home.
 
 SlimeEngine's Stage 6d: the figures before, how an application is written decided, uwui
 decoupled from the engine, its desktop host on a series of compositors, one core for agents and
-its MCP server, the actions declared once, then its code moved here
+its MCP server, the actions declared once, then its code moved here. The core for agents,
+`uwui-agent`, is a session without input or output, in JSON-RPC 2.0, its families each at its
+version, which SlimeEngine's development channel carries since its M6d.9a1a
+([ADR-0246](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0246-one-core-for-agents-cut-in-five-a-session-without-input-or-output.md))
 ([SlimeEngine's plan](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/PLAN.md)).
 
 ### The first stage: the foundations and four programs

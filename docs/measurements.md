@@ -2517,3 +2517,14 @@ time, its CPU unchanged; what the interface adds to a frame over a view, as
 counts the budget, is its pass's time and 1 to 2 µs, within 0.5 ms on every screen. The figures are
 in
 [SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d4b2-the-canvass-layout-chosen).
+
+## The core for agents' first wire (2026-11-12)
+
+SlimeEngine's M6d.9a1a put its development channel on `uwui-agent`, uwui's core for agents: a
+session without input or output, JSON-RPC 2.0 a message a line, its families each at its version
+([ADR-0246](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0246-one-core-for-agents-cut-in-five-a-session-without-input-or-output.md)).
+On an AMD Ryzen 7 5800X at rest, a request answered at once on the loopback took 42.8 µs, the
+median of 21 in a release build, against 48.2 µs through the engine's binary encoding before. A line
+parsed whole costs about 17 times its size in memory, which bounds a request's line on the
+program's side. The figures are in
+[SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d9a1a-the-development-channel-on-uwuis-core-for-agents).
