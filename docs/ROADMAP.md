@@ -329,7 +329,9 @@ of power.
   layouts, a theme's parts, values and rules, shortcuts and docks' layouts, read by uwui's own
   reader, which its Stage 6d builds: without recursion, its size, depth and count of items bounded,
   checked against KDL's official tests, its errors at their line and column; a theme's values in
-  groups of their kinds; the cooked form a document's text
+  groups of their kinds; a table of shortcuts a node for each scope, `scope global { Primary+Z
+  edit.undo }`, its chords naming `Primary`, Ctrl or ⌘ after the platform, a value, and shown as
+  the platform writes them, `Ctrl+Shift+Z` or `⇧⌘Z`; the cooked form a document's text
   ([ADR-0241](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0241-every-document-of-uwui-in-kdl-read-by-its-own-reader.md)).
   Built here: the reader fuzzed under guidance of coverage in CI; a document written back with
   its order, formatting and comments kept, by edits at its spans; colours outside sRGB, as
@@ -449,7 +451,8 @@ each effect, at rest and in motion.
   each package; packages for Linux, Windows, Android and the web; updates installed by an
   application evaluated, at most an optional crate for Windows and macOS ([ADR-0199](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0199-uwuis-targets-tools-and-references-narrowed.md)); a book, a site whose demonstrations run in the browser, and small
   applications finished.
-- macOS's host and integrations, the menu bar, Cmd as the primary modifier, notifications, Now
+- macOS's host and integrations, the menu bar, ⌘ as the primary modifier checked on a Mac, a
+  text field's keys of Control as macOS gives them, notifications, Now
   Playing and the Dock; `uwui bundle` makes an application bundle and a disk image, signed and
   notarized, under an Apple developer account ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)).
 - WCAG 2.2 at level AA, checked; the same small application, whole, written with each rival and
