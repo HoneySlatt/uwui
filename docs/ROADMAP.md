@@ -335,7 +335,10 @@ of power.
   checked against KDL's official tests, its errors at their line and column; a theme's values in
   groups of their kinds; a table of shortcuts a node for each scope, `scope global { Primary+Z
   edit.undo }`, its chords naming `Primary`, Ctrl or ⌘ after the platform, a value, and shown as
-  the platform writes them, `Ctrl+Shift+Z` or `⇧⌘Z`; the cooked form a document's text
+  the platform writes them, `Ctrl+Shift+Z` or `⇧⌘Z`; a dock's layout `version 1` first, then the
+  default that it was made from, then its tree, read leniently within its version, a later version
+  left as it is and a breaking one written under another name, its numbers read back to the same
+  `f32`; the cooked form a document's text
   ([ADR-0241](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0241-every-document-of-uwui-in-kdl-read-by-its-own-reader.md)).
   Built here: the reader fuzzed under guidance of coverage in CI; a document written back with
   its order, formatting and comments kept, by edits at its spans; colours outside sRGB, as
