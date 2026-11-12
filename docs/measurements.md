@@ -2465,3 +2465,14 @@ buffer read field by field. The canvas keeps one shader and reads either, as the
 The figures are in
 [SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d4a-the-canvass-prototype),
 where the interface's GPU time stays until M6d.10.
+
+## A program on uwui without the engine's renderer (2026-11-12)
+
+SlimeEngine's M6d.4b1a moved the canvas out of its renderer into `uwui-render`, and its programs
+draw uwui through `slime-app`'s bridge
+([ADR-0244](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0244-the-engine-lends-its-device-through-a-guarded-door.md)).
+The `widgets` example, built alone by `scripts/uwui-program.sh`, no longer compiles
+`slime-render`; it still compiles `slime-world`, through `slime-app`. Stripped and without the
+development channel, its release binary is 18.8 MB, within the budget of 20 MB, where it was
+19.7 MB. The canvas's GPU time did not change. The figures are in
+[SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d4b1a-the-canvas-moved-into-uwui-render).

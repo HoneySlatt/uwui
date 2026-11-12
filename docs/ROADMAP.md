@@ -22,6 +22,10 @@ trial; under MIT OR Apache-2.0
   screens nor its compositor ([ADR-0199](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0199-uwuis-targets-tools-and-references-narrowed.md)).
 - Embedded in a host that calls it: its core never owns the event loop, and runs without a window
   or a GPU.
+- Drawn with its host's wgpu device: `uwui-render` takes the device, its queue, an encoder that
+  the host submits and a target, and never sets a callback or a handler on a device that it is
+  lent; SlimeEngine lends its own through a guarded door, from its milestone M6d.4b1b
+  ([ADR-0244](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0244-the-engine-lends-its-device-through-a-guarded-door.md)).
 - The same look on every platform, from themes in files; the behaviours that each platform's users
   expect. Its core ships one sober look, a start; Glass, Material 3 Expressive and Pro are official
   themes, each a crate of its own; nothing is chosen in silence ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md), [ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)).
