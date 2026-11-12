@@ -314,7 +314,7 @@ of power.
   durations and colours, declared by the look as a value; under forced colours, which leaves of a
   rule named a role, recorded as the sheets are read; less transparency through a set of values
   by their names, as contrast; a style's reload through `uwui dev` timed again, a token that it
-  adds read at the next taking of the themes ([ADR-0238](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0238-tokens-typed-named-in-code-declared-by-each-crate.md)). A theme's or a style sheet's file changed is sent by `uwui dev` over its one connection,
+  adds read at the next taking of the themes ([ADR-0238](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0238-tokens-typed-named-in-code-declared-by-each-crate.md)). A token and less motion read when a component, a knob or a meter, is drawn, with live values, a component their first reader, so that a change of theme or of the preferences draws again without running a view ([ADR-0242](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0242-the-canvas-moved-in-three-steps-tokens-read-when-drawn-later.md)). A theme's or a style sheet's file changed is sent by `uwui dev` over its one connection,
   which relays `dx`'s patches, after an interval of 50 ms and a few milliseconds of the program's ([ADR-0224](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0224-a-files-change-reaches-the-application-through-the-development-tool.md),
   [measured](measurements.md#a-style-sheets-change-seen-2026-11-09)).
 - Layouts written as data in KDL 2.0: a screen's elements, their names, classes and literal texts,
@@ -386,7 +386,13 @@ of power.
 - Drawing: groups drawn apart into images of their own, kept while they do not change; what lies
   behind an element blurred, bent, tinted and lit, for glass; transforms, several shadows,
   gradients of several stops and radial ones, dithered; vector shapes that morph; a first material
-  of glass, and the fifth screen of reference.
+  of glass, and the fifth screen of reference. The canvas reads its items by their index, from a
+  storage buffer or, on WebGL2, OpenGL ES and WebGPU's mode of compatibility, a texture, through
+  one shader, and draws groups, glass's blur and its copy to the window in passes; it keeps its
+  items across frames and writes what changed. Its prototype's glass, four panels, kept 0.5 ms
+  at 3840 × 2160 and missed the handheld tier's 50 µs: measured again here
+  ([ADR-0243](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0243-the-canvas-reads-its-items-by-index-from-a-buffer-or-a-texture.md),
+  [measured](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d4a-the-canvass-prototype)).
 - Motion: transforms animated, curves and springs, delays in cascade, animations driven by
   scrolling and by gestures, interrupted without a jump, an element that becomes another, variable
   fonts whose axes move; a rate capped for each animation, effects stopped while the window has

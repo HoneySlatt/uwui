@@ -2453,3 +2453,15 @@ bytes ([SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/bl
 - The module holds some 160 absolute paths of the machine that built it, where a panic's place is
   written: a package built for publishing remaps them.
 
+## The canvas's layouts, on SlimeEngine's prototype (2026-11-12)
+
+SlimeEngine's M6d.4a drew its canvas's two screens and five effects, a transform per item, a group
+drawn apart, glass, paths and one item moving over 100,000, with four ways of handing the items to
+the shaders, on Vulkan, at WebGL2's limits and on OpenGL ES 3.0, on the RX 6900 XT and on
+lavapipe. Instances of one format for each kind drew once per change of kind, too often for an
+interface; a texture read by index works everywhere and costs 13 to 20 % more GPU than a storage
+buffer read field by field. The canvas keeps one shader and reads either, as the device allows
+([ADR-0243](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0243-the-canvas-reads-its-items-by-index-from-a-buffer-or-a-texture.md)).
+The figures are in
+[SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d4a-the-canvass-prototype),
+where the interface's GPU time stays until M6d.10.
