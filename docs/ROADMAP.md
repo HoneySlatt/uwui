@@ -397,10 +397,12 @@ of power.
 - Drawing: groups drawn apart into images of their own, kept while they do not change; what lies
   behind an element blurred, bent, tinted and lit, for glass; transforms, several shadows,
   gradients of several stops and radial ones, dithered; vector shapes that morph; a first material
-  of glass, and the fifth screen of reference. The canvas reads its items by their index, from a
-  storage buffer or, on WebGL2, OpenGL ES and WebGPU's mode of compatibility, a texture, through
-  one shader, and draws groups, glass's blur and its copy to the window in passes; it keeps its
-  items across frames and writes what changed. Its prototype's glass, four panels, kept 0.5 ms
+  of glass, and the fifth screen of reference. The canvas reads its items by their index, each
+  field when its kind needs it, from a storage buffer or, on WebGL2 and OpenGL ES, a texture,
+  through one shader, since SlimeEngine's M6d.4b2, which tests it on Mesa's OpenGL ES 3.0
+  ([ADR-0247](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0247-the-canvas-tested-on-opengl-es-through-uwui-renders-feature.md));
+  it is to draw groups, glass's blur and its copy to the window in passes, keep its items across
+  frames and write what changed. Its prototype's glass, four panels, kept 0.5 ms
   at 3840 × 2160 on what it adds to the frame; its boundaries between passes alone pass the
   handheld tier's 50 µs, judged once a boundary's cost on the Deck is known
   ([ADR-0245](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0245-the-interfaces-gpu-budget-counts-what-it-adds-to-the-frame.md)): measured again here

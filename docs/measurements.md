@@ -2501,3 +2501,19 @@ again at each test. On an AMD Ryzen 7 5800X at rest, `uwui` compiles again in 0.
 and a dock's layout of the size of the editor's reads and fits its panels in 9.4 µs, from 76 µs
 through reflection. The figures are in
 [SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d3c3-reflection-out-of-uwui).
+
+## The canvas's layout chosen (2026-11-12)
+
+SlimeEngine's M6d.4b2 gave the canvas its two ways of reading its items, by their index, each field
+when its kind needs it: from a storage buffer, or from a texture where the device has none for both
+stages, as WebGL2 and OpenGL ES
+([ADR-0243](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0243-the-canvas-reads-its-items-by-index-from-a-buffer-or-a-texture.md)).
+Both draw the same bytes on lavapipe, and Mesa's OpenGL ES 3.0 on the CPU draws lavapipe's within
+1/255, in a job of CI of its own
+([ADR-0247](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0247-the-canvas-tested-on-opengl-es-through-uwui-renders-feature.md)).
+On the RX 6900 XT at 3840 × 2160, reading each field when needed took 4 to 11 % off the canvas's GPU
+time, its CPU unchanged; what the interface adds to a frame over a view, as
+[ADR-0245](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0245-the-interfaces-gpu-budget-counts-what-it-adds-to-the-frame.md)
+counts the budget, is its pass's time and 1 to 2 µs, within 0.5 ms on every screen. The figures are
+in
+[SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d4b2-the-canvass-layout-chosen).
