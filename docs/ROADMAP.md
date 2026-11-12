@@ -358,7 +358,10 @@ of power.
   selection's handles and the long press, haptics, the conventions of shortcuts; one model of
   focus for the keyboard, accessibility and gamepads.
 - Fonts given as bytes and loaded when a text first needs them, with a fallback for each writing
-  system, for Android and the web.
+  system, for Android and the web; on the web, the dictionaries of words of the scripts written
+  without spaces loaded the same way, which the budget of the web's package then leaves out as it
+  leaves fonts out: 1.93 MB of the core's 2.35 MB compressed, the core 0.42 MB without them
+  ([measurements](measurements.md#the-package-for-the-web-measured-again-2026-11-11)).
 - Four bounded trials, thrown away, before the API is declared stable, each with its report:
   Android, in a Kotlin activity, with a third milestone on the television box; the web, in a
   canvas; right after the first material of glass, content from outside the tree, shared by Aerith

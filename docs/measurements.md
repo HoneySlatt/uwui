@@ -2428,3 +2428,28 @@ the development shell's linker, not the project's toolchain, which lacks the tar
   its crate not found, the scripts of `parley` the first suspect.
 - Brotli was not available: xz stands in for it. SlimeEngine's M6d.3b2 measures again with the
   project's toolchain and brotli; the web's trial confirms or corrects the budget.
+
+## The package for the web, measured again (2026-11-11)
+
+SlimeEngine's M6d.3b2, the same probe built with the project's toolchain, 1.99.0, with brotli 1.2.0
+at its quality 11; *before* reads the style sheet through reflection, *after* in KDL. Sizes in
+bytes ([SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d3b2-style-sheets-in-kdl)):
+
+| Module | Raw | Brotli |
+|---|---|---|
+| before, nothing read | 4 540 078 | 2 371 459 |
+| before, a sheet and a theme read | 4 826 665 | 2 455 315 |
+| after, nothing read | 4 428 749 | 2 349 389 |
+| after, a sheet and a theme read | 4 560 599 | 2 382 996 |
+| after, `parley` without `complex-scripts`, nothing read | 1 374 559 | 417 564 |
+| after, `parley` without `complex-scripts`, read | 1 509 043 | 454 679 |
+
+- 1.93 MB of the core's 2.35 MB are ICU4X's dictionaries of the words of Chinese and Japanese,
+  Burmese, Khmer, Lao and Thai, which `parley`'s feature `complex-scripts` brings. Without them, the
+  core weighs 0.42 MB, within the budget of 1 MB.
+- Reading a sheet and a theme in KDL weighs 34 kB compressed, from 84 kB through reflection.
+- The core stays over the budget until the milestone of fonts given as bytes loads the dictionaries
+  when a text first needs them ([roadmap](ROADMAP.md)).
+- The module holds some 160 absolute paths of the machine that built it, where a panic's place is
+  written: a package built for publishing remaps them.
+
