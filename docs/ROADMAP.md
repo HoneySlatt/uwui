@@ -390,7 +390,9 @@ of power.
   storage buffer or, on WebGL2, OpenGL ES and WebGPU's mode of compatibility, a texture, through
   one shader, and draws groups, glass's blur and its copy to the window in passes; it keeps its
   items across frames and writes what changed. Its prototype's glass, four panels, kept 0.5 ms
-  at 3840 × 2160 and missed the handheld tier's 50 µs: measured again here
+  at 3840 × 2160 on what it adds to the frame; its boundaries between passes alone pass the
+  handheld tier's 50 µs, judged once a boundary's cost on the Deck is known
+  ([ADR-0245](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0245-the-interfaces-gpu-budget-counts-what-it-adds-to-the-frame.md)): measured again here
   ([ADR-0243](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0243-the-canvas-reads-its-items-by-index-from-a-buffer-or-a-texture.md),
   [measured](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d4a-the-canvass-prototype)).
 - Motion: transforms animated, curves and springs, delays in cascade, animations driven by
