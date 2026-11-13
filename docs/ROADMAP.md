@@ -249,7 +249,13 @@ The host gives uwui its times since SlimeEngine's M6d.5b: `Instant` and `RootTim
 frame's time and its source, each event's, each root's clock, which a paused game holds with the
 layers that open over its roots, the next frame due and the host's waker; the next wake comes
 with the executor below
-([ADR-0251](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0251-the-engines-host-clock-and-its-times.md))
+([ADR-0251](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0251-the-engines-host-clock-and-its-times.md)).
+Since SlimeEngine's M6d.5c, the host gives uwui its input as events, each answered at once, and
+reads each target's outputs: the clipboard is the host's, written through the outputs and read by
+numbered requests answered as events, and the host asks what an input method asks, in the unit
+that it counts in
+([ADR-0253](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0253-input-as-the-hosts-events-each-targets-outputs-m6d5c-cut-in-three.md),
+[ADR-0255](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0255-the-clipboard-through-the-outputs-and-the-hosts-questions.md))
 ([SlimeEngine's plan](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/PLAN.md)).
 
 ### The first stage: the foundations and four programs
