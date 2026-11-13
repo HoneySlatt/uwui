@@ -244,7 +244,12 @@ decoupled from the engine, its desktop host on a series of compositors, one core
 its MCP server, the actions declared once, then its code moved here. The core for agents,
 `uwui-agent`, is a session without input or output, in JSON-RPC 2.0, its families each at its
 version, which SlimeEngine's development channel carries since its M6d.9a1a
-([ADR-0246](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0246-one-core-for-agents-cut-in-five-a-session-without-input-or-output.md))
+([ADR-0246](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0246-one-core-for-agents-cut-in-five-a-session-without-input-or-output.md)).
+The host gives uwui its times since SlimeEngine's M6d.5b: `Instant` and `RootTime`, each
+frame's time and its source, each event's, each root's clock, which a paused game holds with the
+layers that open over its roots, the next frame due and the host's waker; the next wake comes
+with the executor below
+([ADR-0251](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0251-the-engines-host-clock-and-its-times.md))
 ([SlimeEngine's plan](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/PLAN.md)).
 
 ### The first stage: the foundations and four programs
@@ -419,7 +424,7 @@ of power.
   predicted, asked, ready under a variable refresh, on the display's grid or simulated, never back; motion placed by its formula,
   no cap after a late frame; one clock of the host's that counts a suspend, and two types,
   `Instant` and `RootTime`; each root's time and speed, the application's motion and timers
-  following it, hover, press, focus and uwui's own timings on the host's clock, a pause menu a root of its own; input's events in the
+  following it, hover, press, focus and uwui's own timings on the host's clock, a layer on the clock of the root that it opens over, a pause menu a root of its own; input's events in the
   host's clock, a fling starting at its input, a transition at its first frame; a motion asking for
   a frame when its drawing changes visibly, under a cap of one frame in n refreshes, halved for
   lasting motion while saving power; `now`, `shown_at` and `next_frame` in place of a signal of the
