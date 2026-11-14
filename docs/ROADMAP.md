@@ -276,7 +276,14 @@ and makes the window's node only when an update holds it
 Since its M6d.9a1b3a, the interface's family is uwui's: its messages live in `uwui-agent`, each
 element naming its target, and `uwui` answers them behind its feature `agents`, which a build for
 shipping leaves out; an agent reads where the code that wrote an element's own style is
-([ADR-0259](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0259-the-interfaces-family-in-uwui-agent-answered-by-uwui-an-elements-style-by-its-own-request.md))
+([ADR-0259](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0259-the-interfaces-family-in-uwui-agent-answered-by-uwui-an-elements-style-by-its-own-request.md)).
+Since its M6d.9a1b3b1, an agent reads a long list by pages: a cursor to the rest, bound to the
+process and to the interface that made it, each page bounded by a count, by bytes within the line
+that the tool reads and by a share of the frame's time, its long texts cut; `uwui-agent` holds
+the page and its cursor, and `uwui` walks its tree by pages, each element resumed where it stands
+now
+([ADR-0260](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0260-a-long-list-read-by-pages-a-cursor-bound-to-its-maker-pages-bounded-by-time-m6d9a1b3b-cut-in-two.md),
+[ADR-0263](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0263-the-cursor-of-elements-anchored-on-its-next-sibling-what-a-list-may-skip-the-slots-read.md))
 ([SlimeEngine's plan](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/PLAN.md)).
 
 ### The first stage: the foundations and four programs
