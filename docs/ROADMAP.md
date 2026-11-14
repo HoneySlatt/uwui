@@ -297,7 +297,13 @@ Since its M6d.5e1, the host gives uwui the window's focus, which makes its targe
 and, as it leaves, ends a drag and Alt pressed alone; the size of text and less motion come
 through one door, a host's from the system and a program's from its user, the user's first; a
 covered window, a suspend and low memory are the host's alone until a part of uwui reads them
-([ADR-0264](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0264-the-lifecycle-before-each-targets-size-a-lost-surface-made-again-within-a-budget-m6d5e-cut-in-two.md))
+([ADR-0264](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0264-the-lifecycle-before-each-targets-size-a-lost-surface-made-again-within-a-budget-m6d5e-cut-in-two.md)).
+Since its M6d.5e2, the host gives each target its image's size in pixels and its scale, which every
+root on it fills, a layer lying within it, the interface reading its boxes at the scale they were
+laid out at until the next frame; a root over another takes the pointer where it acts, a press,
+the wheel or a drop, and lets it through elsewhere: a game's HUD over its pause menu needs no
+setting
+([ADR-0268](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0268-each-target-its-size-from-its-host-a-root-fills-it-stacked-roots-take-where-they-act.md))
 ([SlimeEngine's plan](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/PLAN.md)).
 
 ### The first stage: the foundations and four programs
