@@ -283,7 +283,12 @@ that the tool reads and by a share of the frame's time, its long texts cut; `uwu
 the page and its cursor, and `uwui` walks its tree by pages, each element resumed where it stands
 now
 ([ADR-0260](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0260-a-long-list-read-by-pages-a-cursor-bound-to-its-maker-pages-bounded-by-time-m6d9a1b3b-cut-in-two.md),
-[ADR-0263](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0263-the-cursor-of-elements-anchored-on-its-next-sibling-what-a-list-may-skip-the-slots-read.md))
+[ADR-0263](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0263-the-cursor-of-elements-anchored-on-its-next-sibling-what-a-list-may-skip-the-slots-read.md)).
+Since its M6d.5e1, the host gives uwui the window's focus, which makes its target the active one
+and, as it leaves, ends a drag and Alt pressed alone; the size of text and less motion come
+through one door, a host's from the system and a program's from its user, the user's first; a
+covered window, a suspend and low memory are the host's alone until a part of uwui reads them
+([ADR-0264](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0264-the-lifecycle-before-each-targets-size-a-lost-surface-made-again-within-a-budget-m6d5e-cut-in-two.md))
 ([SlimeEngine's plan](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/PLAN.md)).
 
 ### The first stage: the foundations and four programs
