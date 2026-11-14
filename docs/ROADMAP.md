@@ -255,7 +255,13 @@ reads each target's outputs: the clipboard is the host's, written through the ou
 numbered requests answered as events, and the host asks what an input method asks, in the unit
 that it counts in
 ([ADR-0253](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0253-input-as-the-hosts-events-each-targets-outputs-m6d5c-cut-in-three.md),
-[ADR-0255](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0255-the-clipboard-through-the-outputs-and-the-hosts-questions.md))
+[ADR-0255](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0255-the-clipboard-through-the-outputs-and-the-hosts-questions.md)).
+Since its M6d.5c3a, each root draws on its target, a layer on its root's, and each target keeps its
+own pointer, focus, modal roots, layers and outputs; the active target, that of the last key or
+button, serves what names no element. A modal root blocks its own target alone: one that blocks a
+parent window or every window waits for a dialog in a window of its own, or panels torn off into
+windows; each target's own frame and frame's time follow at M6d.5c3b
+([ADR-0256](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0256-each-root-on-its-target-each-target-its-input-the-active-target-m6d5c3-cut-in-two.md))
 ([SlimeEngine's plan](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/PLAN.md)).
 
 ### The first stage: the foundations and four programs
