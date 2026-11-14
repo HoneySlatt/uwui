@@ -288,6 +288,11 @@ the page and its cursor, and `uwui` walks its tree by pages, each element resume
 now
 ([ADR-0260](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0260-a-long-list-read-by-pages-a-cursor-bound-to-its-maker-pages-bounded-by-time-m6d9a1b3b-cut-in-two.md),
 [ADR-0263](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0263-the-cursor-of-elements-anchored-on-its-next-sibling-what-a-list-may-skip-the-slots-read.md)).
+Since its M6d.9a1b3b2, a long text is read by pages too, the engine's editor's journal: the page of
+`uwui-agent` gives the bytes of JSON of one character, which its cut counts, and a page's clock
+read between the pieces of a text
+([ADR-0265](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0265-the-editors-journal-read-by-pages-its-number-drawn-by-the-journal-pages-of-whole-entries-on-the-editors-thread.md),
+[ADR-0267](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0267-a-page-of-the-journal-apart-from-the-one-handler-a-cut-journals-start-refused-a-floor-of-4-kib.md)).
 Since its M6d.5e1, the host gives uwui the window's focus, which makes its target the active one
 and, as it leaves, ends a drag and Alt pressed alone; the size of text and less motion come
 through one door, a host's from the system and a program's from its user, the user's first; a
