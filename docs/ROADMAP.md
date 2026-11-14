@@ -260,8 +260,11 @@ Since its M6d.5c3a, each root draws on its target, a layer on its root's, and ea
 own pointer, focus, modal roots, layers and outputs; the active target, that of the last key or
 button, serves what names no element. A modal root blocks its own target alone: one that blocks a
 parent window or every window waits for a dialog in a window of its own, or panels torn off into
-windows; each target's own frame and frame's time follow at M6d.5c3b
-([ADR-0256](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0256-each-root-on-its-target-each-target-its-input-the-active-target-m6d5c3-cut-in-two.md))
+windows
+([ADR-0256](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0256-each-root-on-its-target-each-target-its-input-the-active-target-m6d5c3-cut-in-two.md)).
+Since its M6d.5c3b, each target draws its own frames at its own time, which its motions read, and
+asks for a frame when it holds a change to draw
+([ADR-0258](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0258-each-target-its-frame-and-its-time-a-change-asks-for-its-targets-frame.md))
 ([SlimeEngine's plan](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/PLAN.md)).
 
 ### The first stage: the foundations and four programs
