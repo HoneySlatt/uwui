@@ -18,8 +18,12 @@ trial; under MIT OR Apache-2.0
 [ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)).
 
 - The base of its owner's applications, and of the editor and games of SlimeEngine, which
-  depends on uwui, never the reverse; not of the owner's desktop, its shell, its login and lock
-  screens nor its compositor ([ADR-0199](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0199-uwuis-targets-tools-and-references-narrowed.md)).
+  depends on uwui, never the reverse; and of the owner's desktop: its shell, Hollow, its login and
+  lock screens, and what its compositor, Yuna, draws itself, on a Vulkan device that Yuna lends,
+  a failure of uwui never taking Yuna down
+  ([ADR-0266](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0266-uwui-targets-the-owners-shell-its-lock-and-login-screens-and-what-yuna-draws.md),
+  reversing [ADR-0199](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0199-uwuis-targets-tools-and-references-narrowed.md)'s
+  first decision).
 - Embedded in a host that calls it: its core never owns the event loop, and runs without a window
   or a GPU.
 - Drawn with its host's wgpu device: `uwui-render` takes the device, its queue, an encoder that
