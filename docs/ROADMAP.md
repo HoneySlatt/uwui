@@ -264,7 +264,11 @@ windows
 ([ADR-0256](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0256-each-root-on-its-target-each-target-its-input-the-active-target-m6d5c3-cut-in-two.md)).
 Since its M6d.5c3b, each target draws its own frames at its own time, which its motions read, and
 asks for a frame when it holds a change to draw
-([ADR-0258](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0258-each-target-its-frame-and-its-time-a-change-asks-for-its-targets-frame.md))
+([ADR-0258](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0258-each-target-its-frame-and-its-time-a-change-asks-for-its-targets-frame.md)).
+Since its M6d.9a1b3a, the interface's family is uwui's: its messages live in `uwui-agent`, each
+element naming its target, and `uwui` answers them behind its feature `agents`, which a build for
+shipping leaves out; an agent reads where the code that wrote an element's own style is
+([ADR-0259](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0259-the-interfaces-family-in-uwui-agent-answered-by-uwui-an-elements-style-by-its-own-request.md))
 ([SlimeEngine's plan](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/PLAN.md)).
 
 ### The first stage: the foundations and four programs
