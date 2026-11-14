@@ -267,9 +267,12 @@ asks for a frame when it holds a change to draw
 ([ADR-0258](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0258-each-target-its-frame-and-its-time-a-change-asks-for-its-targets-frame.md)).
 Since its M6d.5d1, each reader of what the interface means, a screen reader's window and, from
 M6d.9a2, an agent's session, follows its own changes, on its own target's tree; no number guards a
-screen reader's late request, since no platform tells which tree it was asked on. Its translation
-into AccessKit's tree moves into `uwui-accesskit`, MIT OR Apache-2.0, at M6d.5d2
+screen reader's late request, since no platform tells which tree it was asked on
 ([ADR-0261](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0261-each-reader-of-meaning-its-changes-each-target-its-tree-no-number-on-a-screen-readers-action-m6d5d-cut-in-two.md)).
+Since its M6d.5d2, the translation into AccessKit's tree is uwui's, in `uwui-accesskit`, MIT OR
+Apache-2.0: any host gives each window's tree to its own adapter through one `ScreenReaderTree`,
+and makes the window's node only when an update holds it
+([ADR-0262](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0262-uwui-accesskits-api-one-tree-per-window-the-hosts-node-made-when-needed.md)).
 Since its M6d.9a1b3a, the interface's family is uwui's: its messages live in `uwui-agent`, each
 element naming its target, and `uwui` answers them behind its feature `agents`, which a build for
 shipping leaves out; an agent reads where the code that wrote an element's own style is
