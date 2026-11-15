@@ -30,8 +30,9 @@ trial; under MIT OR Apache-2.0
   the host submits and a target, and never sets a callback or a handler on a device that it is
   lent; SlimeEngine lends its own through a guarded door, since its milestone M6d.4b1b
   ([ADR-0244](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0244-the-engine-lends-its-device-through-a-guarded-door.md)).
-  A host that opens its own device, as uwui's desktop host will, handles its loss: wgpu cannot be
-  asked, and raises errors for what the host makes after the loss, which it ignores then.
+  A host that opens its own device, as uwui's desktop host does since SlimeEngine's M6d.7a1,
+  handles its loss: wgpu cannot be asked, and raises errors for what the host makes after the loss,
+  which it ignores then.
 - The same look on every platform, from themes in files; the behaviours that each platform's users
   expect. Its core ships one sober look, a start; Glass, Material 3 Expressive and Pro are official
   themes, each a crate of its own; nothing is chosen in silence ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md), [ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)).
@@ -313,7 +314,15 @@ tools' errors; it keeps nothing for an agent between calls, as MCP `2026-07-28` 
 agent follows what changes through requests that wait, from M6d.9a2c, since agents' clients show a
 model only a tool's results
 ([ADR-0269](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0269-uwuis-mcp-library-reaches-a-program-through-its-host-faults-as-tool-errors-changes-followed-by-requests-that-wait-m6d9a2-cut-in-three.md),
-[ADR-0272](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0272-the-carriers-families-and-its-connections-state-join-it-at-their-first-reader.md))
+[ADR-0272](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0272-the-carriers-families-and-its-connections-state-join-it-at-their-first-reader.md)).
+Since its M6d.7a1, uwui's desktop host, `uwui-desktop`, MIT OR Apache-2.0, runs an application on
+uwui alone, `run(look, window, app)`, on a windowing layer of its own: Wayland's yet, spoken through
+`wayland-client`, its frames on the compositor's frame callback and none at rest, its time on the
+grid of the callbacks, the pointer's events at their own times anchored on the host's clock, its own
+device; its example rests in Weston, sway, KWin and Mutter. The keyboard, the cursor, the fractional
+scale and frames drawn just in time come at M6d.7a2, then X11, Windows and macOS
+([ADR-0270](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0270-uwuis-desktop-host-on-a-windowing-layer-of-its-own-cut-by-platform-m6d7-cut-in-six.md),
+[ADR-0271](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0271-frames-on-the-platforms-signal-drawn-just-in-time-none-at-rest.md))
 ([SlimeEngine's plan](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/PLAN.md)).
 
 ### The first stage: the foundations and four programs
