@@ -270,7 +270,8 @@ Since its M6d.5c3b, each target draws its own frames at its own time, which its 
 asks for a frame when it holds a change to draw
 ([ADR-0258](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0258-each-target-its-frame-and-its-time-a-change-asks-for-its-targets-frame.md)).
 Since its M6d.5d1, each reader of what the interface means, a screen reader's window and, from
-M6d.9a2, an agent's session, follows its own changes, on its own target's tree; no number guards a
+M6d.9a2c, the agents' requests that wait for a change, follows its own changes, on its own
+target's tree; no number guards a
 screen reader's late request, since no platform tells which tree it was asked on
 ([ADR-0261](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0261-each-reader-of-meaning-its-changes-each-target-its-tree-no-number-on-a-screen-readers-action-m6d5d-cut-in-two.md)).
 Since its M6d.5d2, the translation into AccessKit's tree is uwui's, in `uwui-accesskit`, MIT OR
@@ -303,7 +304,16 @@ root on it fills, a layer lying within it, the interface reading its boxes at th
 laid out at until the next frame; a root over another takes the pointer where it acts, a press,
 the wheel or a drop, and lets it through elsewhere: a game's HUD over its pause menu needs no
 setting
-([ADR-0268](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0268-each-target-its-size-from-its-host-a-root-fills-it-stacked-roots-take-where-they-act.md))
+([ADR-0268](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0268-each-target-its-size-from-its-host-a-root-fills-it-stacked-roots-take-where-they-act.md)).
+Since its M6d.9a2a, uwui's MCP library, `uwui-mcp`, MIT OR Apache-2.0, gives the interface's
+family as tools to any MCP server: it reaches a program through the carrier that its server's type
+is, SlimeEngine's development channel until `uwui dev`'s, with which uwui's MCP server as a program
+comes; a call that its agent cancels cancels its request; a program's faults reach the agent as
+tools' errors; it keeps nothing for an agent between calls, as MCP `2026-07-28` has no session. An
+agent follows what changes through requests that wait, from M6d.9a2c, since agents' clients show a
+model only a tool's results
+([ADR-0269](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0269-uwuis-mcp-library-reaches-a-program-through-its-host-faults-as-tool-errors-changes-followed-by-requests-that-wait-m6d9a2-cut-in-three.md),
+[ADR-0272](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0272-the-carriers-families-and-its-connections-state-join-it-at-their-first-reader.md))
 ([SlimeEngine's plan](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/PLAN.md)).
 
 ### The first stage: the foundations and four programs
