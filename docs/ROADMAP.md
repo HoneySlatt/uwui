@@ -315,6 +315,12 @@ agent follows what changes through requests that wait, from M6d.9a2c, since agen
 model only a tool's results
 ([ADR-0269](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0269-uwuis-mcp-library-reaches-a-program-through-its-host-faults-as-tool-errors-changes-followed-by-requests-that-wait-m6d9a2-cut-in-three.md),
 [ADR-0272](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0272-the-carriers-families-and-its-connections-state-join-it-at-their-first-reader.md)).
+Since its M6d.9a2b1, a server on `uwui-mcp` gathers its tools by families, each with its paragraph
+of the server's instructions, a tool's name taken twice an error when it is built, and asks any
+family's request in that family's own types; the core's welcome gives, for each family refused, the
+version that the program serves, so that a tool names the side to build again
+([ADR-0274](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0274-the-engines-families-typed-on-the-cores-way-a-family-not-served-refused-as-it-is-sent-m6d9a2b-cut-in-two.md),
+[ADR-0275](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0275-a-familys-refusal-gives-the-version-that-the-program-serves.md)).
 Since its M6d.7a1, uwui's desktop host, `uwui-desktop`, MIT OR Apache-2.0, runs an application on
 uwui alone, `run(look, window, app)`, on a windowing layer of its own: Wayland's yet, spoken through
 `wayland-client`, its frames on the compositor's frame callback and none at rest, its time on the
