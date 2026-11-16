@@ -17,7 +17,7 @@ agents. It is the base of the interfaces of
 - Its code still lives in SlimeEngine, in `crates/uwui` and `crates/uwui-render`. SlimeEngine's
   Stage 6d moves it here, with its history.
 - Outside contributions open at uwui's 1.0. Until then, issues and pull requests from others are
-  not taken.
+  not taken; a vulnerability is reported privately, as [`SECURITY.md`](SECURITY.md) says.
 
 ## Where to read next
 
