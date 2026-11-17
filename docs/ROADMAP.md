@@ -181,13 +181,13 @@ A budget missed is debt until it is met. No application runs on uwui yet: none i
 | The lead | on each machine and screen, a program's *own cost*, what it adds above a *blank window* that only clears and presents, is at most a third of the best rival's: memory, the start, the processor, power, a frame's time and the package's size; at rest and from input to present, the blank window's figure ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)) | the blank window measured beside each screen, from SlimeEngine's M6d.7 |
 | Porting | an application on uwui's APIs alone runs on Linux, Windows, macOS and the web with no line written for one platform; on Android and iOS, only its package's configuration and permissions differ; a couch screen's lines counted apart, as a form factor's ([ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)); provisional until the trials of Android, the web and iOS ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)) | the small application of 1.0 on each platform: its lines for that platform, the steps from `uwui new` to a package installed, the package's size, against Electron, Tauri, Flutter, GPUI and Compose Multiplatform |
 | Input to photon | timed by a light sensor on the screen, so that the rivals compare from outside ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)) | the light sensor's bench, from SlimeEngine's Stage 6e |
-| Compiling | SlimeEngine's budgets of compiling, applied to an application on uwui; their figures for an application weighed at SlimeEngine's M6d.10 ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md), [ADR-0220](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0220-the-roadmap-reshaped-by-the-market.md)) | at each milestone, on the high tier |
+| Compiling | SlimeEngine's budgets of compiling, applied to an application on uwui; their figures for an application weighed at SlimeEngine's M6d.10b ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md), [ADR-0220](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0220-the-roadmap-reshaped-by-the-market.md)) | at each milestone, on the high tier |
 | Hours without a crash | at least 99.9 % of an application's hours of use without a crash, no work lost after one ([ADR-0215](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0215-the-engine-measured-against-the-market.md)) | the hours and crashes counted on the machine |
 | Agents | an *agent bench*: a screen from a mock-up, a feature added, a bug fixed, a port to the web, given to the same agents in the same words with uwui and with GPUI and gpui-kit, Flutter, Compose, Electron, Tauri and Slint; at least the best rival's success, on fewer tokens; provisional ([ADR-0213](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0213-uwuis-reach-its-lead-its-themes-and-agents.md)) | success, tries, tokens and time, with the models, their versions and the date, at each release |
 
 The interface's GPU time and a list's frame, which SlimeEngine's editor shares, stay in
 [SlimeEngine's quality bar](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/ROADMAP.md#4-quality-bar)
-until its milestone M6d.10 decides their home.
+until its milestone M6d.10a decides their home.
 
 ### Without a figure
 
@@ -543,8 +543,10 @@ each effect, at rest and in motion.
   XL, HEIC and Lottie; the renderer on the CPU, measured on the lowest machines.
 - The tvOS trial, two milestones on the owner's Apple TV, if Aerith passes Apple's review for tvOS
   ([ADR-0233](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0233-uwuis-platforms-apples-chips-ios-and-the-tvs.md)).
-- Extensions in WebAssembly; settings, the window's state and undo for applications; translation
-  through Fluent.
+- Extensions in WebAssembly; settings and the window's state for applications; translation through
+  Fluent. Undo stays the program's: uwui asks it through the interface of undo that the program
+  fills, built by SlimeEngine's M6d.9b, and keeps no history of its own
+  ([ADR-0293](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0293-actions-declared-once-in-uwuis-core-undo-and-the-journal-the-programs.md)).
 - `uwui new`, `run`, `dev`, `bundle` and `doctor`, `bundle` delegating to the tools that make
   each package; packages for Linux, Windows, Android and the web; updates installed by an
   application evaluated, at most an optional crate for Windows and macOS ([ADR-0199](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0199-uwuis-targets-tools-and-references-narrowed.md)); a book, a site whose demonstrations run in the browser, and small
@@ -569,5 +571,5 @@ opened: every requirement of ADR-0190 met or recorded as debt; the application m
 the rivals better than each as a whole, on lines, start, memory, frames and power; semantic
 versioning kept from then on; patronage opened.
 
-The cut and the order of these stages are designed in SlimeEngine's milestone M6d.10, with the
-owner.
+The cut and the order of these stages are designed here at SlimeEngine's M6d.10b, after the move, with the
+owner ([ADR-0300](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0300-m6d10-cut-in-two-what-the-move-needs-before-it-uwuis-first-stage-planned-after.md)).
