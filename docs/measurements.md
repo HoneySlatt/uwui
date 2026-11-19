@@ -2528,3 +2528,29 @@ median of 21 in a release build, against 48.2 µs through the engine's binary en
 parsed whole costs about 17 times its size in memory, which bounds a request's line on the
 program's side. The figures are in
 [SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d9a1a-the-development-channel-on-uwuis-core-for-agents).
+
+## The desktop host's first figures (2026-11-18)
+
+SlimeEngine's M6d.7a2c measured uwui's desktop host, its example `application`, above a *blank
+window*, a program that only clears its window and presents it, on the host's platform layer, and
+the same on winit, with its `scripts/host-cost.py`, in a headless sway 1.12 at 1920 × 1080 and
+240 Hz, on an AMD Ryzen 7 5800X and a Radeon RX 6900 XT on RADV
+([ADR-0307](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0307-m6d7a2c-cut-in-two-the-host-measured-first-the-blank-window-on-winit-in-a-package-of-its-own.md)).
+M6d.7a2c2 then drew the host's frames just in time
+([ADR-0309](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0309-input-to-shown-measured-beside-input-to-present-in-motion-an-input-reaches-the-next-image.md)).
+The applications' budgets' first figures, on the GPU, after it:
+
+| Budget | Figure | The example | Its own cost above the blank window |
+|---|---|---|---|
+| At rest | 0 frames, 0 wake-ups | 0 frames, 0 wake-ups over 10 s | none |
+| Input to present, at rest, 99th | 4.17 ms | 0.87 ms | +0.27 ms |
+| Input to present, in motion, 99th | a refresh plus the frame's work, 4.82 ms | 4.37 ms | +0.07 ms |
+| Input to shown, in motion, median / 99th | — | 4.17 / 5.43 ms | −2.78 ms at the 99th, the blank window drawing on the signal |
+| Start, warm, to its first image | 100 ms | 51.0 ms | +3.7 ms |
+| Memory, proportional / resident | 100 MB resident | 46.4 / 62.9 MB, 54.3 MB of video memory | +6.6 MB proportional |
+| Binary, stripped | 20 MB | 14.5 MB | +9.3 MB |
+
+The example is small, not yet a typical application: these figures are the floor that the four
+programs of the first stage build on. The compositor and the display after the image shown are not
+measured. The figures and their method are in
+[SlimeEngine's measurements](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/measurements.md#m6d7a2c2-frames-drawn-just-in-time).

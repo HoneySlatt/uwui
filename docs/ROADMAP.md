@@ -168,12 +168,12 @@ Zed's file, Zed itself:
 
 ### Budgets
 
-A budget missed is debt until it is met. No application runs on uwui yet: none is measured.
+A budget missed is debt until it is met. No application runs on uwui yet; its desktop host's example and a blank window are measured since SlimeEngine's M6d.7a2c ([`measurements.md`](measurements.md#the-desktop-hosts-first-figures-2026-11-18)).
 
 | Budget | Figure | Measured by |
 |---|---|---|
 | At rest | 0 frames and 0 own wake-ups a second; a caret that blinks stops after 10 s without input | every thread's context switches over 10 s, on each compositor of the series ([ADR-0185](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0185-rest-checked-in-ci.md), [ADR-0195](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0195-a-series-of-headless-compositors.md)) |
-| Input to present | at the 99th percentile, 1 frame, 4.17 ms on the high tier ([ADR-0189](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0189-first-measures-of-time.md)) | a person's input given through the compositor, `input to present` in a trace |
+| Input to present | at the 99th percentile, 1 frame, 4.17 ms on the high tier, at rest; in motion, the next image, a refresh of the display plus the frame's work; input to shown measured beside it ([ADR-0189](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0189-first-measures-of-time.md), [ADR-0309](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0309-input-to-shown-measured-beside-input-to-present-in-motion-an-input-reaches-the-next-image.md)) | a person's input given through the compositor, `input to present` in a trace; the desktop host by SlimeEngine's `scripts/host-cost.py` |
 | Start | a typical application on the high tier, warm, to its first useful frame, 100 ms; cold, 500 ms ([ADR-0190](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0190-uwuis-requirements.md), [ADR-0192](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0192-the-budget-of-a-cold-start.md)) | the log's times, and the launch timed by `hyperfine` |
 | Size and changes | a typical application on the high tier: at most 100 MB resident at rest, a binary of at most 20 MB, a change of its interface seen within 2 s ([ADR-0190](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0190-uwuis-requirements.md)) | the four programs of the first stage, and the application measured against the rivals |
 | The package for the web | at most 1 MB of WebAssembly compressed with brotli, fonts apart; provisional until the web's trial ([ADR-0181](https://github.com/HoneySlatt/SlimeEngine/blob/main/docs/adr/0181-uwuis-scope.md)) | the web's trial |
